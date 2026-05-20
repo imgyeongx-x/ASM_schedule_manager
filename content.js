@@ -53,22 +53,40 @@
       let location = '';
       let people = '';
 
-      // Search tables
-      const ths = doc.querySelectorAll('th');
-      ths.forEach(th => {
-        const label = th.textContent.trim();
-        const td = th.nextElementSibling;
-        if (!td) return;
-        const val = td.textContent.trim().replace(/\s+/g, ' ');
+      // Attempt 1: div.group > strong.t + div.c (SOMA mentoring detail page structure)
+      const groups = doc.querySelectorAll('div.group');
+      groups.forEach(group => {
+        const labelEl = group.querySelector('strong.t');
+        const valueEl = group.querySelector('div.c');
+        if (!labelEl || !valueEl) return;
+        const label = labelEl.textContent.trim();
+        const val = valueEl.textContent.trim().replace(/\s+/g, ' ');
 
         if (label.includes('장소') || label.includes('위치') || label.includes('교육장소')) {
-          location = val;
-        } else if (label.includes('인원') || label.includes('신청') || label.includes('모집인원') || label.includes('정원')) {
-          people = val;
+          if (!location) location = val;
+        } else if (label.includes('인원') || label.includes('정원') || label.includes('모집')) {
+          if (!people) people = val;
         }
       });
 
-      // Secondary list items (dt/dd)
+      // Attempt 2: th/td table structure
+      if (!location || !people) {
+        const ths = doc.querySelectorAll('th');
+        ths.forEach(th => {
+          const label = th.textContent.trim();
+          const td = th.nextElementSibling;
+          if (!td) return;
+          const val = td.textContent.trim().replace(/\s+/g, ' ');
+
+          if (label.includes('장소') || label.includes('위치') || label.includes('교육장소')) {
+            if (!location) location = val;
+          } else if (label.includes('인원') || label.includes('신청') || label.includes('모집인원') || label.includes('정원')) {
+            if (!people) people = val;
+          }
+        });
+      }
+
+      // Attempt 3: dt/dd structure
       if (!location || !people) {
         const dts = doc.querySelectorAll('dt');
         dts.forEach(dt => {
@@ -85,7 +103,7 @@
         });
       }
 
-      // Fallback text check
+      // Attempt 4: keyword scan in td
       if (!location) {
         const tds = doc.querySelectorAll('td');
         for (const td of tds) {
