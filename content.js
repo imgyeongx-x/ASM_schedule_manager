@@ -11,16 +11,12 @@
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   }
 
-  function get2WeekRange() {
+  function getMonthRange(offset = 0) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const dow = today.getDay();
-    const daysToMon = dow === 0 ? -6 : 1 - dow;
-    const mon = new Date(today);
-    mon.setDate(today.getDate() + daysToMon);
-    const sun = new Date(mon);
-    sun.setDate(mon.getDate() + 13);
-    return { start: mon, end: sun, today };
+    const base = new Date(today.getFullYear(), today.getMonth() + offset, 1);
+    const end = new Date(base.getFullYear(), base.getMonth() + 1, 0);
+    return { start: base, end, today, year: base.getFullYear(), month: base.getMonth() };
   }
 
   // ── 리스트 테이블 파싱 (DOM 또는 HTML 문자열에서) ──────────────────────────
@@ -335,12 +331,6 @@
     const statusCls = isPast ? "asm-done" : ev.isClosed ? "asm-closed" : "asm-open-badge";
     badges.appendChild(mkBadge(statusLabel, statusCls));
 
-    if (ev.current !== "" && ev.total !== "") {
-      const cap = document.createElement("span");
-      cap.className = "asm-cap";
-      cap.textContent = `${ev.current}/${ev.total}명`;
-      badges.appendChild(cap);
-    }
     card.appendChild(badges);
 
     const titleEl = document.createElement("div");
@@ -359,16 +349,24 @@
       footer.appendChild(author);
     }
 
-    // 2행: 시간 + 바로가기
-    const bottom = document.createElement("div");
-    bottom.className = "asm-card-footer-bottom";
+    // 2행: 시간
     if (ev.timeStart) {
-      const time = document.createElement("span");
+      const time = document.createElement("div");
       time.className = "asm-card-time";
       time.textContent = `${ev.timeStart} ~ ${ev.timeEnd}`;
-      bottom.appendChild(time);
+      footer.appendChild(time);
+    }
+
+    // 3행: 인원수 + 바로가기
+    const bottom = document.createElement("div");
+    bottom.className = "asm-card-footer-bottom";
+    if (ev.current !== "" && ev.total !== "") {
+      const cap = document.createElement("span");
+      cap.className = "asm-cap";
+      cap.textContent = `${ev.current}/${ev.total}명`;
+      bottom.appendChild(cap);
     } else {
-      bottom.appendChild(document.createElement("span")); // 빈 공간으로 링크를 오른쪽 정렬
+      bottom.appendChild(document.createElement("span"));
     }
     const linkEl = document.createElement("a");
     linkEl.className = "asm-card-link";
@@ -422,8 +420,8 @@
 
   // ── 캘린더 패널 빌드 ─────────────────────────────────────────────────────
 
-  function buildPanel(events, isLoading) {
-    const { start, end, today } = get2WeekRange();
+  function buildPanel(events, isLoading, offset = 0, onNavigate = null) {
+    const { start, end, today, year, month } = getMonthRange(offset);
     const todayStr = toDateStr(today);
 
     const byDate = new Map();
@@ -443,14 +441,7 @@
 
     const titleWrap = document.createElement("div");
     titleWrap.className = "asm-panel-title-wrap";
-    titleWrap.innerHTML = '<span class="asm-panel-ico">📅</span><span class="asm-panel-title">2주 일정</span>';
-
-    const fmt = (d) =>
-      `${d.getMonth() + 1}.${String(d.getDate()).padStart(2, "0")}(${DAY_KO[d.getDay()]})`;
-    const rangeEl = document.createElement("span");
-    rangeEl.className = "asm-panel-range";
-    rangeEl.textContent = `${fmt(start)} ~ ${fmt(end)}`;
-    titleWrap.appendChild(rangeEl);
+    titleWrap.innerHTML = `<span class="asm-panel-ico">📅</span><span class="asm-panel-title">${year}년 ${month + 1}월</span>`;
 
     // 로딩 표시
     const loadingEl = document.createElement("span");
@@ -460,6 +451,34 @@
     titleWrap.appendChild(loadingEl);
 
     header.appendChild(titleWrap);
+
+    // 네비게이션 버튼
+    const navWrap = document.createElement("div");
+    navWrap.className = "asm-panel-nav";
+
+    const prevBtn = document.createElement("button");
+    prevBtn.className = "asm-panel-nav-btn";
+    prevBtn.textContent = "‹ 이전달";
+    prevBtn.title = "이전 달";
+    prevBtn.addEventListener("click", () => onNavigate && onNavigate(offset - 1));
+    navWrap.appendChild(prevBtn);
+
+    if (offset !== 0) {
+      const todayBtn = document.createElement("button");
+      todayBtn.className = "asm-panel-nav-btn asm-nav-today";
+      todayBtn.textContent = "오늘";
+      todayBtn.addEventListener("click", () => onNavigate && onNavigate(0));
+      navWrap.appendChild(todayBtn);
+    }
+
+    const nextBtn = document.createElement("button");
+    nextBtn.className = "asm-panel-nav-btn";
+    nextBtn.textContent = "다음달 ›";
+    nextBtn.title = "다음 달";
+    nextBtn.addEventListener("click", () => onNavigate && onNavigate(offset + 1));
+    navWrap.appendChild(nextBtn);
+
+    header.appendChild(navWrap);
 
     const toggleBtn = document.createElement("button");
     toggleBtn.className = "asm-panel-toggle";
@@ -480,9 +499,9 @@
     // 요일 헤더
     const wdRow = document.createElement("div");
     wdRow.className = "asm-cal-weekdays";
-    ["월", "화", "수", "목", "금", "토", "일"].forEach((wd, i) => {
+    ["일", "월", "화", "수", "목", "금", "토"].forEach((wd, i) => {
       const cell = document.createElement("div");
-      cell.className = `asm-cal-wd${i >= 5 ? " asm-wd-weekend" : ""}`;
+      cell.className = `asm-cal-wd${(i === 0 || i === 6) ? " asm-wd-weekend" : ""}`;
       cell.textContent = wd;
       wdRow.appendChild(cell);
     });
@@ -497,6 +516,13 @@
     eventPanel.style.display = "none";
 
     let selectedDate = null;
+
+    // 월 첫째 날 요일 전 빈 셀 (일=0 ~ 토=6)
+    for (let i = 0; i < start.getDay(); i++) {
+      const empty = document.createElement("div");
+      empty.className = "asm-cal-day asm-cal-empty";
+      grid.appendChild(empty);
+    }
 
     byDate.forEach((dayEvents, dateStr) => {
       const d = new Date(dateStr + "T00:00:00");
@@ -577,80 +603,61 @@
     return { panel, grid, eventPanel, byDate, selectedDate: () => selectedDate };
   }
 
-  // buildPanel의 별칭 - 이미 필터링된 이벤트 배열을 직접 받는 형태
-  function buildPanelFromEvents(events, isLoading) {
-    return buildPanel(events, isLoading);
-  }
-
-  // ── 전체 데이터 fetch 후 패널 갱신 ───────────────────────────────────────
-
-  function refreshPanel(panelEl, completeMap) {
-    const { start, end } = get2WeekRange();
-    const startStr = toDateStr(start);
-    const endStr = toDateStr(end);
-    const allEvents = collectEvents(completeMap).filter(
-      (ev) => ev.date >= startStr && ev.date <= endStr
-    );
-
-    const loadingEl = document.getElementById("asm-panel-loading");
-    if (loadingEl) loadingEl.textContent = "";
-
-    const newPanelData = buildPanel(allEvents, false);
-    panelEl.parentNode.replaceChild(newPanelData.panel, panelEl);
-  }
-
   // ── 초기화 ────────────────────────────────────────────────────────────────
 
   async function init() {
-    const { start, end } = get2WeekRange();
-    const startStr = toDateStr(start);
-    const endStr = toDateStr(end);
-
-    // ① 현재 페이지 데이터로 즉시 렌더 (로딩 표시 포함)
-    const initialMap = parseTableRows(document);
-    const initialEvents = collectEvents(initialMap).filter(
-      (ev) => ev.date >= startStr && ev.date <= endStr
-    );
-
     const calWrap = document.querySelector(".mypageCalendar.wrap");
     if (!calWrap) return;
 
-    const isCached = !!loadCache();
-    const { panel } = buildPanel(initialEvents, !isCached);
-    const bbsTop = document.querySelector(".bbs-top.bg");
-    if (bbsTop) {
-      bbsTop.parentNode.insertBefore(panel, bbsTop);
-    } else {
-      calWrap.parentNode.insertBefore(panel, calWrap);
+    let currentOffset = 0;
+    let allEvents = [];
+
+    function getFilteredEvents() {
+      const { start, end } = getMonthRange(currentOffset);
+      const s = toDateStr(start), e = toDateStr(end);
+      return allEvents.map((ev) => ({ ...ev })).filter((ev) => ev.date >= s && ev.date <= e);
     }
+
+    function withLocations(events) {
+      const cache = loadLocCache();
+      return events.map((ev) => {
+        if (ev.sn && cache.has(ev.sn)) return { ...ev, location: cache.get(ev.sn) || null };
+        return ev;
+      });
+    }
+
+    function renderPanel(events, loading) {
+      const existing = document.getElementById("asm-2week-panel");
+      const { panel } = buildPanel(events, loading, currentOffset, navigate);
+      if (existing) {
+        existing.parentNode.replaceChild(panel, existing);
+      } else {
+        const bbsTop = document.querySelector(".bbs-top.bg");
+        if (bbsTop) bbsTop.parentNode.insertBefore(panel, bbsTop);
+        else calWrap.parentNode.insertBefore(panel, calWrap);
+      }
+    }
+
+    async function navigate(newOffset) {
+      currentOffset = newOffset;
+      renderPanel(withLocations(getFilteredEvents()), false);
+      await fetchLocations(getFilteredEvents());
+      renderPanel(withLocations(getFilteredEvents()), false);
+    }
+
+    // ① 현재 페이지 데이터로 즉시 렌더
+    const initialMap = parseTableRows(document);
+    allEvents = collectEvents(initialMap);
+    renderPanel(withLocations(getFilteredEvents()), !loadCache());
 
     // ② 전체 페이지 fetch → 멘토/인원/상태 완성
     const completeMap = await buildCompleteEventMap();
-    const rangeEvents = collectEvents(completeMap).filter(
-      (ev) => ev.date >= startStr && ev.date <= endStr
-    );
+    allEvents = collectEvents(completeMap);
+    renderPanel(withLocations(getFilteredEvents()), true);
 
-    const p2 = document.getElementById("asm-2week-panel");
-    if (p2) refreshPanel(p2, completeMap);
-
-    // ③ 2주 이벤트 상세 페이지 fetch → 장소 정보 반영
-    const loadingEl = document.getElementById("asm-panel-loading");
-    if (loadingEl) loadingEl.textContent = "장소 정보 불러오는 중…";
-
-    const locCache = await fetchLocations(rangeEvents);
-
-    // 장소 정보를 이벤트에 붙여서 최종 갱신
-    rangeEvents.forEach((ev) => {
-      if (ev.sn && locCache.has(ev.sn)) {
-        ev.location = locCache.get(ev.sn) || null;
-      }
-    });
-
-    const p3 = document.getElementById("asm-2week-panel");
-    if (p3) {
-      const { panel: newPanel } = buildPanelFromEvents(rangeEvents, false);
-      p3.parentNode.replaceChild(newPanel, p3);
-    }
+    // ③ 상세 페이지 fetch → 장소 정보 반영
+    await fetchLocations(getFilteredEvents());
+    renderPanel(withLocations(getFilteredEvents()), false);
   }
 
   if (document.readyState === "loading") {

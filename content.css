@@ -40,6 +40,31 @@
   color: #64748b;
 }
 
+.asm-panel-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.asm-panel-nav-btn {
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  color: #374151;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.asm-panel-nav-btn:hover { background: #f1f5f9; }
+
+.asm-panel-nav-btn.asm-nav-today {
+  color: #1d4ed8;
+  border-color: #93c5fd;
+  background: #eff6ff;
+}
+.asm-panel-nav-btn.asm-nav-today:hover { background: #dbeafe; }
+
 .asm-panel-toggle {
   background: #fff;
   border: 1px solid #d1d5db;
@@ -86,12 +111,19 @@
   gap: 4px;
 }
 
+/* 빈 셀 (월 시작 전 패딩) */
+.asm-cal-day.asm-cal-empty {
+  border-color: transparent;
+  background: transparent;
+  pointer-events: none;
+}
+
 /* 날짜 셀 */
 .asm-cal-day {
   border-radius: 8px;
   border: 1.5px solid #e2e8f0;
   padding: 8px 6px 6px;
-  min-height: 76px;
+  min-height: 65px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -293,6 +325,7 @@
   white-space: normal;
   word-break: keep-all;
   overflow-wrap: break-word;
+  flex: 1;
 }
 .asm-event-card.asm-card-gray .asm-card-title { color: #94a3b8; }
 
@@ -301,7 +334,8 @@
   display: flex;
   flex-direction: column;
   gap: 3px;
-  margin-top: 4px;
+  margin-top: auto;
+  padding-top: 4px;
 }
 .asm-card-author {
   font-size: 11px;
