@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "SOMA Schedule Manager",
+  "version": "1.2.0",
+  "description": "소프트웨어 마에스트로 멘토링/특강 접수내역을 캘린더 형태로 시각화하고, 개인 일정을 로컬에 등록 관리할 수 있도록 지원하는 확장 프로그램입니다.",
+  "permissions": [
+    "storage"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.swmaestro.org/busan/sw/mypage/userAnswer/history.do*",
+        "*://*.swmaestro.ai/busan/sw/mypage/userAnswer/history.do*",
+        "*://*.swmaestro.org/sw/mypage/userAnswer/history.do*",
+        "*://*.swmaestro.ai/sw/mypage/userAnswer/history.do*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "styles.css"
+      ]
+    }
+  ]
+}
