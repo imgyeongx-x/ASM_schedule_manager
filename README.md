@@ -6,7 +6,7 @@
 
 ### 1. 자유 멘토링 / 멘토 특강 캘린더
 
-<img width="3000" height="3425" alt="자유 멘토링 및 멘토 특강 캘린더" src="https://github.com/user-attachments/assets/3ccf4cc2-7f97-4fca-9208-2fefdd004bd0" />
+<img width="3348" height="3425" alt="자유 멘토링 및 멘토 특강 캘린더" src="https://github.com/user-attachments/assets/3ccf4cc2-7f97-4fca-9208-2fefdd004bd0" />
 
 - 자유 멘토링과 멘토 특강 일정을 달력 형태로 확인할 수 있습니다.
 - 기존 표 형태의 일정 데이터를 4주형 캘린더 카드로 보여줍니다.
@@ -24,7 +24,7 @@
 
 ### 2. 접수 내역 개인 캘린더
 
-<img width="3000" height="4116" alt="접수 내역 개인 캘린더" src="https://github.com/user-attachments/assets/b3f52c81-c467-4e7c-af0c-293035fb9980" />
+<img width="3152" height="4116" alt="접수 내역 개인 캘린더" src="https://github.com/user-attachments/assets/b3f52c81-c467-4e7c-af0c-293035fb9980" />
 
 - 접수 내역 페이지에서 개인 일정을 함께 관리할 수 있습니다.
 - `chrome.storage.local`을 사용해 개인 일정을 브라우저에 저장합니다.
