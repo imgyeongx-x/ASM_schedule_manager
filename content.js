@@ -1001,6 +1001,12 @@
     );
   }
 
+  function getPersonalScheduleManageUrl() {
+    const path = window.location.pathname;
+    const basePath = path.includes('/busan/sw/') ? '/busan/sw' : '/sw';
+    return `${window.location.origin}${basePath}/mypage/userAnswer/history.do?menuNo=200047`;
+  }
+
   function injectWarningBanner(schedule, detailText = '') {
     const existing = document.getElementById('soma-conflict-banner');
     if (existing) existing.remove();
@@ -1010,11 +1016,15 @@
     banner.innerHTML = `
       <div class="conflict-icon">⚠️</div>
       <div class="conflict-content">
-        <div class="conflict-title">개인 일정이랑 겹치는 멘토링입니다</div>
+        <div class="conflict-title">개인 일정과 겹치는 멘토링입니다.</div>
         <div class="conflict-desc">
           이 강의 시간은 개인 일정 <strong>"${schedule.title}"</strong> (${schedule.startTime} ~ ${schedule.endTime})과 중복되므로 신청할 수 없습니다.
         </div>
+        <div class="conflict-help">멘토링을 신청하시려면 일정을 변경하세요.</div>
         ${detailText ? `<div class="conflict-meta">${detailText}</div>` : ''}
+        <div class="conflict-actions">
+          <a class="conflict-link-btn" href="${getPersonalScheduleManageUrl()}">개인 일정 수정하기</a>
+        </div>
       </div>
     `;
 

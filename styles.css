@@ -551,11 +551,42 @@
   line-height: 1.5;
 }
 
+#soma-conflict-banner .conflict-help {
+  font-size: 13px;
+  color: #991b1b;
+  line-height: 1.5;
+}
+
 #soma-conflict-banner .conflict-meta {
   font-size: 12px;
   color: #991b1b;
   line-height: 1.4;
   word-break: break-word;
+}
+
+#soma-conflict-banner .conflict-actions {
+  margin-top: 4px;
+}
+
+#soma-conflict-banner .conflict-link-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 10px;
+  background: #dc2626;
+  color: #fff !important;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 6px 14px rgba(220, 38, 38, 0.18);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+#soma-conflict-banner .conflict-link-btn:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
 }
 
 #soma-conflict-banner .conflict-desc strong {
