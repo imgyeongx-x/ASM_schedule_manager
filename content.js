@@ -43,7 +43,8 @@
     }
 
     try {
-      const response = await fetch(url);
+      const absoluteUrl = url.startsWith('http') ? url : `${window.location.origin}${url.startsWith('/') ? url : '/' + url}`;
+      const response = await fetch(absoluteUrl, { credentials: 'include' });
       if (!response.ok) throw new Error('Network error');
       const htmlText = await response.text();
       const parser = new DOMParser();
