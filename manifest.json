@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "SOMA Schedule Manager",
-  "version": "1.1.0",
-  "description": "소프트웨어 마에스트로 멘토링/특강 접수내역을 캘린더 형태로 시각화하고, 개인 일정을 로컬에 등록 관리할 수 있도록 지원하는 확장 프로그램입니다.",
+  "name": "소마 멘토링 캘린더 개선",
+  "version": "1.0.0",
+  "description": "소프트웨어 마에스트로 멘토링 신청 캘린더 UI 개선 및 멘토 필터링 기능 추가",
   "permissions": [
     "storage"
   ],
@@ -18,12 +18,10 @@
         "*://*.swmaestro.org/sw/mypage/mentoLec/view.do*",
         "*://*.swmaestro.ai/sw/mypage/mentoLec/view.do*"
       ],
-      "js": [
-        "content.js"
-      ],
-      "css": [
-        "styles.css"
-      ]
+      "js": ["schedule-manager.js"],
+      "css": ["schedule-manager.css"],
+      "run_at": "document_idle"
     }
-  ]
+  ],
+  "action": {}
 }

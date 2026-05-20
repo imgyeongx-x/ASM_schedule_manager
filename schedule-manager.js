@@ -1,4 +1,4 @@
-// SOMA Schedule Manager - Content Script
+// SOMA Schedule Manager - Schedule Manager Script
 // Automatically parses registration tables, renders a calendar, and manages personal schedules with conflict checks.
 
 (async function () {
