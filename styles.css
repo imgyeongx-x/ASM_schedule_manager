@@ -303,6 +303,18 @@
   border-color: #cbd5e1;
 }
 
+#history-calendar .button-group .edit-btn {
+  background: #f0fdf4;
+  color: #16a34a;
+  border-color: #bbf7d0;
+}
+
+#history-calendar .button-group .edit-btn:hover:not(:disabled) {
+  background: #dcfce7 !important;
+  color: #15803d !important;
+  border-color: #86efac !important;
+}
+
 #history-calendar .button-group .delete-btn {
   background: #fff5f5;
   color: #e53e3e;

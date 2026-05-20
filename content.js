@@ -10,6 +10,7 @@
   // Extension State
   let startOffsetWeeks = 0; // 0 means starting from the Sunday of current week
   let hideEndedLectures = false;
+  let editingScheduleId = null;
 
   // Helper: check if a lecture/schedule has ended
   function isLectureEnded(dateTimeText) {
@@ -423,22 +424,35 @@
         return;
       }
 
-      const newSchedule = {
-        id: 'personal_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
-        title,
-        dateStr,
-        startTime,
-        endTime,
-        description
-      };
-
       const currentList = await new Promise(resolve => {
         chrome.storage.local.get(['soma_personal_schedules'], (res) => {
           resolve(res.soma_personal_schedules || []);
         });
       });
 
-      currentList.push(newSchedule);
+      if (editingScheduleId) {
+        const index = currentList.findIndex(item => item.id === editingScheduleId);
+        if (index !== -1) {
+          currentList[index] = {
+            ...currentList[index],
+            title,
+            dateStr,
+            startTime,
+            endTime,
+            description
+          };
+        }
+      } else {
+        const newSchedule = {
+          id: 'personal_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+          title,
+          dateStr,
+          startTime,
+          endTime,
+          description
+        };
+        currentList.push(newSchedule);
+      }
 
       await new Promise(resolve => {
         chrome.storage.local.set({ soma_personal_schedules: currentList }, resolve);
@@ -446,6 +460,7 @@
 
       closeModal();
       form.reset();
+      editingScheduleId = null;
       startSelect.value = '09:00';
       endSelect.value = '10:00';
 
@@ -460,6 +475,9 @@
     const modal = document.getElementById('personal-schedule-modal');
     if (!modal) return;
 
+    editingScheduleId = null;
+    modal.querySelector('.modal-header h4').textContent = '➕ 새 개인 일정 등록';
+
     const dateInput = modal.querySelector('#schedule-date');
     if (dateInput) {
       if (dateStr) {
@@ -472,6 +490,34 @@
         dateInput.value = `${yyyy}-${mm}-${dd}`;
       }
     }
+
+    // Reset fields
+    const titleInput = modal.querySelector('#schedule-title');
+    if (titleInput) titleInput.value = '';
+    const descTextarea = modal.querySelector('#schedule-desc');
+    if (descTextarea) descTextarea.value = '';
+
+    modal.style.display = 'flex';
+    if (titleInput) {
+      titleInput.focus();
+    }
+  }
+
+  // Open modal for editing schedule helper
+  function openModalForEditing(ps) {
+    injectModalDOM();
+    const modal = document.getElementById('personal-schedule-modal');
+    if (!modal) return;
+
+    editingScheduleId = ps.id;
+    modal.querySelector('.modal-header h4').textContent = '✏️ 개인 일정 수정';
+
+    // Populate existing values
+    modal.querySelector('#schedule-title').value = ps.title;
+    modal.querySelector('#schedule-date').value = ps.dateStr;
+    modal.querySelector('#schedule-start-time').value = ps.startTime;
+    modal.querySelector('#schedule-end-time').value = ps.endTime;
+    modal.querySelector('#schedule-desc').value = ps.description || '';
 
     modal.style.display = 'flex';
     const titleInput = modal.querySelector('#schedule-title');
@@ -632,6 +678,15 @@
           const buttonGroup = document.createElement('div');
           buttonGroup.className = 'button-group';
 
+          const btnEdit = document.createElement('button');
+          btnEdit.className = 'edit-btn';
+          btnEdit.innerHTML = '✏️ 수정';
+          btnEdit.title = '개인 일정 수정';
+          btnEdit.addEventListener('click', (e) => {
+            e.preventDefault();
+            openModalForEditing(ps);
+          });
+
           const btnDelete = document.createElement('button');
           btnDelete.className = 'delete-btn';
           btnDelete.innerHTML = '🗑️ 삭제';
@@ -655,6 +710,7 @@
             }
           });
 
+          buttonGroup.appendChild(btnEdit);
           buttonGroup.appendChild(btnDelete);
           card.appendChild(buttonGroup);
           cell.appendChild(card);
