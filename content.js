@@ -897,6 +897,24 @@
   // --- DETAIL PAGE / CONFLICT RESOLUTION MODE ---
 
   function findLectureDateTimeOnDetailPage() {
+    const groups = document.querySelectorAll('div.group');
+    for (const group of groups) {
+      const labelEl = group.querySelector('strong.t');
+      const valueEl = group.querySelector('div.c');
+      if (!labelEl || !valueEl) continue;
+
+      const headerText = labelEl.textContent.trim();
+      const valueText = valueEl.textContent.trim().replace(/\s+/g, ' ');
+
+      if (headerText.includes('강의날짜') || headerText.includes('강의일시') || headerText.includes('교육일시')) {
+        const match = valueText.match(/(\d{4})[-./](\d{2})[-./](\d{2})(?:\([^)]+\))?\s*(\d{2})[:시]\s*(\d{2})?\s*분?\s*~\s*(\d{2})[:시]\s*(\d{2})?\s*분?/);
+        if (match) {
+          const [, y, m, d, sh, sm = '00', eh, em = '00'] = match;
+          return `${y}-${m}-${d} ${sh.padStart(2, '0')}:${sm.padStart(2, '0')} ~ ${eh.padStart(2, '0')}:${em.padStart(2, '0')}`;
+        }
+      }
+    }
+
     const ths = document.querySelectorAll('th');
     let dateStr = '';
     let timeStr = '';
@@ -1005,8 +1023,8 @@
       clone.classList.add('soma-conflict-disabled');
       clone.style.opacity = '0.5';
       clone.style.cursor = 'not-allowed';
-      clone.style.pointerEvents = 'none';
       clone.removeAttribute('onclick'); // Remove inline onclick handler
+      clone.removeAttribute('href');
       
       // Extra protection capture handler
       clone.addEventListener('click', (e) => {
@@ -1115,16 +1133,24 @@
         console.error('Failed to initialize history dashboard:', e);
       }
     }
-    /*
-    // Conflict checker is on the back burner for now
     else if (path.includes('/mypage/mentoLec/view.do')) {
       try {
         await checkLectureConflictWithRetry();
+
+        const observer = new MutationObserver(() => {
+          checkLectureConflictWithRetry().catch(e => {
+            console.error('Failed to re-run scheduling conflict checker:', e);
+          });
+        });
+
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true
+        });
       } catch (e) {
         console.error('Failed to run scheduling conflict checker:', e);
       }
     }
-    */
   }
 
   // DOM ready check
