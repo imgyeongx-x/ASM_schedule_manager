@@ -21,28 +21,6 @@
     return endTime < new Date();
   }
 
-  // Helper: convert KST datetime components to UTC ICS-style date string
-  function kstToUtcIcsString(year, month, day, hour, minute, second = '00') {
-    const date = new Date(Date.UTC(
-      parseInt(year, 10),
-      parseInt(month, 10) - 1,
-      parseInt(day, 10),
-      parseInt(hour, 10),
-      parseInt(minute, 10),
-      parseInt(second, 10)
-    ));
-    date.setUTCHours(date.getUTCHours() - 9); // Convert KST (UTC+9) to UTC
-    
-    const pad = (num) => String(num).padStart(2, '0');
-    const y = date.getUTCFullYear();
-    const mo = pad(date.getUTCMonth() + 1);
-    const d = pad(date.getUTCDate());
-    const hh = pad(date.getUTCHours());
-    const mi = pad(date.getUTCMinutes());
-    const ss = pad(date.getUTCSeconds());
-    
-    return `${y}${mo}${d}T${hh}${mi}${ss}Z`;
-  }
 
   // Fetch SOMA lecture details (Location & Enrollment) with cache support
   async function fetchLectureDetails(qustnrSn, url, dateTimeText) {
@@ -202,74 +180,6 @@
     }
 
     return lectures;
-  }
-
-  // Handle ICS downloading
-  function downloadICS(lecture) {
-    const match = lecture.dateTimeText.match(/(\d{4})-(\d{2})-(\d{2})\([^)]+\)\s*(\d{2}):(\d{2})(?::\d{2})?\s*~\s*(\d{2}):(\d{2})(?::\d{2})?/);
-    if (!match) {
-      alert('일정 날짜 형식이 올바르지 않습니다.');
-      return;
-    }
-    
-    const [_, y, m, d, sh, sm, eh, em] = match;
-    const dtStart = `${y}${m}${d}T${sh}${sm}00`;
-    const dtEnd = `${y}${m}${d}T${eh}${em}00`;
-    const uid = `soma_lecture_${lecture.qustnrSn || Math.random().toString(36).substr(2, 9)}@swmaestro.org`;
-    const dtStamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-    
-    const icsLines = [
-      'BEGIN:VCALENDAR',
-      'VERSION:2.0',
-      'PRODID:-//SOMA Schedule Manager//KR',
-      'CALSCALE:GREGORIAN',
-      'BEGIN:VEVENT',
-      `UID:${uid}`,
-      `DTSTAMP:${dtStamp}`,
-      `DTSTART;TZID=Asia/Seoul:${dtStart}`,
-      `DTEND;TZID=Asia/Seoul:${dtEnd}`,
-      `SUMMARY:${lecture.title}`,
-      `DESCRIPTION:구분: ${lecture.type}\\n멘토: ${lecture.author}\\n접수상태: ${lecture.status}\\n인원: ${lecture.people}`,
-      `LOCATION:${lecture.location}`,
-      'END:VEVENT',
-      'END:VCALENDAR'
-    ];
-    
-    const icsContent = icsLines.join('\r\n');
-    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    
-    const a = document.createElement('a');
-    a.href = url;
-    const cleanTitle = lecture.title.replace(/[^\w\sㄱ-ㅎㅏ-ㅣ가-힣-]/g, '').trim();
-    a.download = `[소마]_${cleanTitle}.ics`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }
-
-  // Redirect to Google Calendar
-  function openGoogleCalendar(lecture) {
-    const match = lecture.dateTimeText.match(/(\d{4})-(\d{2})-(\d{2})\([^)]+\)\s*(\d{2}):(\d{2})(?::\d{2})?\s*~\s*(\d{2}):(\d{2})(?::\d{2})?/);
-    if (!match) {
-      alert('일정 날짜 형식이 올바르지 않습니다.');
-      return;
-    }
-    
-    const [_, y, m, d, sh, sm, eh, em] = match;
-    const utcStart = kstToUtcIcsString(y, m, d, sh, sm);
-    const utcEnd = kstToUtcIcsString(y, m, d, eh, em);
-    
-    const title = encodeURIComponent(`[소마] ${lecture.title}`);
-    const dates = `${utcStart}/${utcEnd}`;
-    const details = encodeURIComponent(
-      `구분: ${lecture.type}\n멘토: ${lecture.author}\n접수상태: ${lecture.status}\n인원: ${lecture.people}\n링크: ${window.location.origin}${lecture.url || ''}`
-    );
-    const location = encodeURIComponent(lecture.location);
-    
-    const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&details=${details}&location=${location}`;
-    window.open(gcalUrl, '_blank');
   }
 
   // Trigger Cancel Registration
@@ -745,25 +655,6 @@
 
           const buttonGroup = document.createElement('div');
           buttonGroup.className = 'button-group';
-
-          const btnIcs = document.createElement('button');
-          btnIcs.className = 'export-btn';
-          btnIcs.innerHTML = '💾 ICS';
-          btnIcs.title = 'ICS 일정 파일 다운로드';
-          btnIcs.addEventListener('click', (e) => {
-            e.preventDefault();
-            downloadICS(lec);
-          });
-
-          const btnGcal = document.createElement('button');
-          btnGcal.className = 'gcal-btn';
-          btnGcal.innerHTML = '📅 구글';
-          btnGcal.title = '구글 캘린더에 일정 등록';
-          btnGcal.addEventListener('click', (e) => {
-            e.preventDefault();
-            openGoogleCalendar(lec);
-          });
-
           const btnCancel = document.createElement('button');
           if (lec.hasCancelButton) {
             btnCancel.className = 'cancel-btn';
@@ -780,8 +671,6 @@
             btnCancel.disabled = true;
           }
 
-          buttonGroup.appendChild(btnIcs);
-          buttonGroup.appendChild(btnGcal);
           buttonGroup.appendChild(btnCancel);
           card.appendChild(buttonGroup);
 
