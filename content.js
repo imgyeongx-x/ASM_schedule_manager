@@ -986,7 +986,7 @@
     return null;
   }
 
-  function injectWarningBanner(schedule, anchorElement) {
+  function injectWarningBanner(schedule, anchorElement, detailText = '') {
     const existing = document.getElementById('soma-conflict-banner');
     if (existing) existing.remove();
     
@@ -995,10 +995,11 @@
     banner.innerHTML = `
       <div class="conflict-icon">⚠️</div>
       <div class="conflict-content">
-        <div class="conflict-title">일정 중복 감지 - 신청 제한됨</div>
+        <div class="conflict-title">개인 일정이랑 겹치는 멘토링입니다</div>
         <div class="conflict-desc">
           이 강의 시간은 개인 일정 <strong>"${schedule.title}"</strong> (${schedule.startTime} ~ ${schedule.endTime})과 중복되므로 신청할 수 없습니다.
         </div>
+        ${detailText ? `<div class="conflict-meta">${detailText}</div>` : ''}
       </div>
     `;
     
@@ -1012,7 +1013,7 @@
     }
   }
 
-  function blockApplication(conflictingSchedule) {
+  function blockApplication(conflictingSchedule, detailText = '') {
     console.log('SOMA Schedule Manager: blockApplication started.');
     // Collect possible apply triggers
     const applyElements = Array.from(document.querySelectorAll('button, input[type="submit"], input[type="button"], a.btn, a'));
@@ -1053,7 +1054,7 @@
 
     // Find first target element parent or action wrap to inject warning banner
     const anchor = document.querySelector('.btn-area') || (targetElements[0] ? targetElements[0].parentNode : null);
-    injectWarningBanner(conflictingSchedule, anchor);
+    injectWarningBanner(conflictingSchedule, anchor, detailText);
   }
 
   async function checkLectureConflict() {
@@ -1073,6 +1074,7 @@
     const lectureStart = new Date(parseInt(y, 10), parseInt(m, 10) - 1, parseInt(d, 10), parseInt(sh, 10), parseInt(sm, 10), 0);
     const lectureEnd = new Date(parseInt(y, 10), parseInt(m, 10) - 1, parseInt(d, 10), parseInt(eh, 10), parseInt(em, 10), 0);
     console.log('SOMA Schedule Manager: Parsed Lecture bounds:', lectureStart, 'to', lectureEnd);
+    const detailText = `멘토링 시간: ${dateTimeText}`;
     
     // Load personal schedules
     const personalSchedules = await new Promise(resolve => {
@@ -1103,7 +1105,7 @@
     
     if (conflictingSchedule) {
       console.warn(`SOMA Schedule Manager: Overlap detected with personal schedule "${conflictingSchedule.title}"`);
-      blockApplication(conflictingSchedule);
+      blockApplication(conflictingSchedule, detailText);
     } else {
       console.log('SOMA Schedule Manager: No scheduling conflict detected.');
     }
