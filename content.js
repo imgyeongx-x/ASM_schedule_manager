@@ -24,7 +24,7 @@
 
   // Fetch SOMA lecture details (Location & Enrollment) with cache support
   async function fetchLectureDetails(qustnrSn, url, dateTimeText) {
-    if (!url) return { location: '정보 없음', people: '정보 없음' };
+    if (!url) return { location: '정보 없음', people: '정보 없음', deadline: '정보 없음' };
 
     const cacheKey = `soma_lecture_detail_${qustnrSn}`;
     const cached = await new Promise(resolve => {
@@ -36,9 +36,15 @@
     const isPast = isLectureEnded(dateTimeText);
     const now = Date.now();
 
-    if (cached) {
+    const hasDetailCacheShape = cached && Object.prototype.hasOwnProperty.call(cached, 'deadline');
+
+    if (cached && hasDetailCacheShape) {
       if (isPast || (cached.timestamp && now - cached.timestamp < CACHE_TTL_MS)) {
-        return { location: cached.location, people: cached.people };
+        return {
+          location: cached.location,
+          people: cached.people,
+          deadline: cached.deadline || '정보 없음'
+        };
       }
     }
 
@@ -52,6 +58,33 @@
 
       let location = '';
       let people = '';
+      let deadline = '';
+
+      const captureDetailField = (label, value) => {
+        const normalizedLabel = label.replace(/\s+/g, '');
+        const normalizedValue = value.replace(/\s+/g, ' ').trim();
+
+        if (!location && /장소|위치/.test(normalizedLabel)) {
+          location = normalizedValue;
+          return;
+        }
+
+        if (
+          !people &&
+          /(?:모집|신청)?인원|정원/.test(normalizedLabel) &&
+          !/모집명|과정명|강의명|제목/.test(normalizedLabel)
+        ) {
+          people = normalizedValue;
+          return;
+        }
+
+        if (
+          !deadline &&
+          /마감|신청기간|접수기간|모집기간|접수일시|신청일시/.test(normalizedLabel)
+        ) {
+          deadline = normalizedValue;
+        }
+      };
 
       // Attempt 1: div.group > strong.t + div.c (SOMA mentoring detail page structure)
       const groups = doc.querySelectorAll('div.group');
@@ -61,45 +94,30 @@
         if (!labelEl || !valueEl) return;
         const label = labelEl.textContent.trim();
         const val = valueEl.textContent.trim().replace(/\s+/g, ' ');
-
-        if (label.includes('장소') || label.includes('위치') || label.includes('교육장소')) {
-          if (!location) location = val;
-        } else if (label.includes('인원') || label.includes('정원') || label.includes('모집')) {
-          if (!people) people = val;
-        }
+        captureDetailField(label, val);
       });
 
       // Attempt 2: th/td table structure
-      if (!location || !people) {
+      if (!location || !people || !deadline) {
         const ths = doc.querySelectorAll('th');
         ths.forEach(th => {
           const label = th.textContent.trim();
           const td = th.nextElementSibling;
           if (!td) return;
           const val = td.textContent.trim().replace(/\s+/g, ' ');
-
-          if (label.includes('장소') || label.includes('위치') || label.includes('교육장소')) {
-            if (!location) location = val;
-          } else if (label.includes('인원') || label.includes('신청') || label.includes('모집인원') || label.includes('정원')) {
-            if (!people) people = val;
-          }
+          captureDetailField(label, val);
         });
       }
 
       // Attempt 3: dt/dd structure
-      if (!location || !people) {
+      if (!location || !people || !deadline) {
         const dts = doc.querySelectorAll('dt');
         dts.forEach(dt => {
           const label = dt.textContent.trim();
           const dd = dt.nextElementSibling;
           if (!dd) return;
           const val = dd.textContent.trim().replace(/\s+/g, ' ');
-
-          if (label.includes('장소') || label.includes('위치')) {
-            if (!location) location = val;
-          } else if (label.includes('인원') || label.includes('신청')) {
-            if (!people) people = val;
-          }
+          captureDetailField(label, val);
         });
       }
 
@@ -117,11 +135,13 @@
 
       const finalLocation = location || '정보 없음';
       const finalPeople = people || '정보 없음';
+      const finalDeadline = deadline || '정보 없음';
 
       // Save to cache
       const detailsToCache = {
         location: finalLocation,
         people: finalPeople,
+        deadline: finalDeadline,
         dateTimeText: dateTimeText,
         timestamp: Date.now()
       };
@@ -132,10 +152,10 @@
         chrome.storage.local.set(cacheObj, resolve);
       });
 
-      return { location: finalLocation, people: finalPeople };
+      return { location: finalLocation, people: finalPeople, deadline: finalDeadline };
     } catch (e) {
       console.error(`Failed to fetch details for lecture ${qustnrSn}:`, e);
-      return { location: '정보 없음', people: '정보 없음' };
+      return { location: '정보 없음', people: '정보 없음', deadline: '정보 없음' };
     }
   }
 
@@ -175,7 +195,7 @@
       
       const hasCancelButton = !!row.querySelector('[onclick*="delDate"]');
 
-      let details = { location: '로딩 중...', people: '로딩 중...' };
+      let details = { location: '로딩 중...', people: '로딩 중...', deadline: '로딩 중...' };
       if (qustnrSn && url) {
         details = await fetchLectureDetails(qustnrSn, url, dateTimeText);
       }
@@ -194,7 +214,8 @@
         approval,
         hasCancelButton,
         location: details.location,
-        people: details.people
+        people: details.people,
+        deadline: details.deadline === '정보 없음' ? (status || approval || '정보 없음') : details.deadline
       });
     }
 
@@ -669,7 +690,10 @@
             <div class="info-row" data-role="author">👤 ${lec.author}</div>
             <div class="info-row" data-role="time">⏰ ${timeStr}</div>
             <div class="info-row" data-role="location">📍 ${lec.location}</div>
-            <div class="info-row" data-role="people">👥 ${lec.people}</div>
+            <div class="info-row info-footer" data-role="meta">
+              <span class="info-meta">👥 ${lec.people}</span>
+              <span class="info-meta">⌛ ${lec.deadline}</span>
+            </div>
           `;
           card.appendChild(infoLink);
 

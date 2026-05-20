@@ -103,6 +103,7 @@
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 12px;
+  align-items: start;
 }
 
 /* Responsive Grid columns */
@@ -128,7 +129,7 @@
   border: 1px solid rgba(226, 232, 240, 0.8);
   border-radius: 14px;
   padding: 12px;
-  min-height: 120px;
+  min-height: 100px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -258,6 +259,22 @@
 #history-calendar .info-row {
   color: #475569;
   font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+#history-calendar .info-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+#history-calendar .info-meta {
+  min-width: 0;
+  flex: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -630,4 +647,3 @@
   background-color: #ffffff;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
 }
-
