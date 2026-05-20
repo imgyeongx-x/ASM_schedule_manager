@@ -95,6 +95,20 @@
     return normalized;
   }
 
+  function parseLectureDateTimeText(dateTimeText) {
+    if (!dateTimeText) return null;
+
+    const normalized = dateTimeText.replace(/\s+/g, ' ').trim();
+    const match = normalized.match(
+      /(\d{4})[-./](\d{2})[-./](\d{2})(?:\([^)]+\))?\s*(\d{2})(?::(\d{2}))?\s*시?\s*~\s*(\d{2})(?::(\d{2}))?\s*시?/
+    );
+
+    if (!match) return null;
+
+    const [, y, m, d, sh, sm = '00', eh, em = '00'] = match;
+    return { y, m, d, sh, sm, eh, em };
+  }
+
   // Fetch SOMA lecture details (Location & Enrollment) with cache support
   async function fetchLectureDetails(qustnrSn, url, dateTimeText) {
     if (!url) {
@@ -907,9 +921,9 @@
       const valueText = valueEl.textContent.trim().replace(/\s+/g, ' ');
 
       if (headerText.includes('강의날짜') || headerText.includes('강의일시') || headerText.includes('교육일시')) {
-        const match = valueText.match(/(\d{4})[-./](\d{2})[-./](\d{2})(?:\([^)]+\))?\s*(\d{2})[:시]\s*(\d{2})?\s*분?\s*~\s*(\d{2})[:시]\s*(\d{2})?\s*분?/);
+        const match = parseLectureDateTimeText(valueText);
         if (match) {
-          const [, y, m, d, sh, sm = '00', eh, em = '00'] = match;
+          const { y, m, d, sh, sm, eh, em } = match;
           return `${y}-${m}-${d} ${sh.padStart(2, '0')}:${sm.padStart(2, '0')} ~ ${eh.padStart(2, '0')}:${em.padStart(2, '0')}`;
         }
       }
@@ -1051,11 +1065,11 @@
       return;
     }
     
-    const match = dateTimeText.match(/(\d{4})[-./](\d{2})[-./](\d{2})(?:\([^)]+\))?\s*(\d{2}):(\d{2})(?::\d{2})?\s*~\s*(\d{2}):(\d{2})(?::\d{2})?/);
+    const match = parseLectureDateTimeText(dateTimeText);
     console.log('SOMA Schedule Manager: Regex match result:', match);
     if (!match) return;
     
-    const [_, y, m, d, sh, sm, eh, em] = match;
+    const { y, m, d, sh, sm, eh, em } = match;
     const lectureStart = new Date(parseInt(y, 10), parseInt(m, 10) - 1, parseInt(d, 10), parseInt(sh, 10), parseInt(sm, 10), 0);
     const lectureEnd = new Date(parseInt(y, 10), parseInt(m, 10) - 1, parseInt(d, 10), parseInt(eh, 10), parseInt(em, 10), 0);
     console.log('SOMA Schedule Manager: Parsed Lecture bounds:', lectureStart, 'to', lectureEnd);
