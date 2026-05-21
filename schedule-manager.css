@@ -119,13 +119,13 @@
 }
 
 #history-calendar .control-btn.accent {
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  background: #086DB7;
   border: none;
   color: #ffffff;
 }
 
 #history-calendar .control-btn.accent:hover {
-  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  background: #065a99;
   color: #ffffff;
 }
 
@@ -179,7 +179,7 @@
   background: #eff6ff;
   border-right-color: #bfdbfe;
   border-bottom-color: #bfdbfe;
-  outline: 2px solid #3b82f6;
+  outline: 2px solid #086DB7;
   outline-offset: -2px;
   z-index: 1;
 }
