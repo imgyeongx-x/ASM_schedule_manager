@@ -509,6 +509,14 @@
             </div>
           </div>
           <div class="form-group">
+            <label>장소 (선택)</label>
+            <div class="location-type-row">
+              <button type="button" class="location-type-btn active" data-type="online">온라인</button>
+              <button type="button" class="location-type-btn" data-type="offline">오프라인</button>
+            </div>
+            <input type="text" id="schedule-location" class="location-detail-input" placeholder="링크 또는 플랫폼 (선택)">
+          </div>
+          <div class="form-group">
             <label for="schedule-desc">설명 (선택)</label>
             <textarea id="schedule-desc" rows="3" placeholder="일정 세부 정보 또는 메모를 입력하세요."></textarea>
           </div>
@@ -575,6 +583,18 @@
       dateInput.value = getFormattedDate(1);
     });
 
+    // Location type toggle
+    const locationBtns = modal.querySelectorAll('.location-type-btn');
+    const locationInput = modal.querySelector('#schedule-location');
+    const locationPlaceholders = { online: '링크 또는 플랫폼 (선택)', offline: '장소 또는 주소 (선택)' };
+    locationBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        locationBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        locationInput.placeholder = locationPlaceholders[btn.dataset.type];
+      });
+    });
+
     // Close listeners
     const closeBtn = modal.querySelector('.close-modal-btn');
     const cancelBtn = modal.querySelector('.btn-cancel');
@@ -596,6 +616,8 @@
       const startTime = document.getElementById('schedule-start-time').value;
       const endTime = document.getElementById('schedule-end-time').value;
       const description = document.getElementById('schedule-desc').value.trim();
+      const locationType = modal.querySelector('.location-type-btn.active')?.dataset.type || 'online';
+      const location = document.getElementById('schedule-location').value.trim();
 
       if (startTime >= endTime) {
         alert('종료 시간은 시작 시간보다 늦어야 합니다.');
@@ -617,7 +639,9 @@
             dateStr,
             startTime,
             endTime,
-            description
+            description,
+            locationType,
+            location
           };
         }
       } else {
@@ -627,7 +651,9 @@
           dateStr,
           startTime,
           endTime,
-          description
+          description,
+          locationType,
+          location
         };
         currentList.push(newSchedule);
       }
@@ -674,6 +700,11 @@
     if (titleInput) titleInput.value = '';
     const descTextarea = modal.querySelector('#schedule-desc');
     if (descTextarea) descTextarea.value = '';
+    modal.querySelectorAll('.location-type-btn').forEach(b => b.classList.remove('active'));
+    const onlineBtn = modal.querySelector('.location-type-btn[data-type="online"]');
+    if (onlineBtn) onlineBtn.classList.add('active');
+    const locInput = modal.querySelector('#schedule-location');
+    if (locInput) { locInput.value = ''; locInput.placeholder = '링크 또는 플랫폼 (선택)'; }
 
     modal.style.display = 'flex';
     if (titleInput) {
@@ -696,6 +727,15 @@
     modal.querySelector('#schedule-start-time').value = ps.startTime;
     modal.querySelector('#schedule-end-time').value = ps.endTime;
     modal.querySelector('#schedule-desc').value = ps.description || '';
+    modal.querySelectorAll('.location-type-btn').forEach(b => b.classList.remove('active'));
+    const lt = ps.locationType || 'online';
+    const activeLocBtn = modal.querySelector(`.location-type-btn[data-type="${lt}"]`);
+    if (activeLocBtn) activeLocBtn.classList.add('active');
+    const locInput = modal.querySelector('#schedule-location');
+    if (locInput) {
+      locInput.value = ps.location || '';
+      locInput.placeholder = lt === 'offline' ? '장소 또는 주소 (선택)' : '링크 또는 플랫폼 (선택)';
+    }
 
     modal.style.display = 'flex';
     const titleInput = modal.querySelector('#schedule-title');
@@ -861,11 +901,14 @@
           card.title = ps.title;
 
           const badgeText = ps.isFixedShared ? '📌 공통 일정' : '👤 개인 일정';
+          const locationLabel = ps.locationType === 'offline' ? '오프라인' : (ps.locationType === 'online' ? '온라인' : '');
+          const locationDetail = ps.location ? ` · ${ps.location}` : '';
           card.innerHTML = `
             <div class="info-group">
               <div class="text-title" data-role="title">${ps.title}</div>
               <div class="text-type-badge personal-badge">${badgeText}</div>
               <div class="info-row" data-role="time"><strong>시간</strong> ${ps.startTime} ~ ${ps.endTime}</div>
+              ${ps.locationType ? `<div class="info-row" data-role="location"><strong>장소</strong> ${locationLabel}${locationDetail}</div>` : ''}
               ${ps.description ? `<div class="info-row desc-row" data-role="desc"><strong>메모</strong> ${ps.description}</div>` : ''}
             </div>
           `;
