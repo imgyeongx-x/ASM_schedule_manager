@@ -550,7 +550,7 @@
 
   // ── 날짜 클릭 이벤트 패널 렌더 ───────────────────────────────────────────
 
-  function renderEventPanel(container, dayEvents, dateStr, todayStr) {
+  function renderEventPanel(container, dayEvents, dateStr, todayStr, isLoading) {
     container.innerHTML = "";
 
     const d = new Date(dateStr + "T00:00:00");
@@ -786,7 +786,13 @@
     const eventPanel = document.createElement("div");
     eventPanel.className = "asm-event-panel";
 
-    let selectedDate = null;
+    function showPlaceholder() {
+      if (isLoading) {
+        eventPanel.innerHTML = '<div class="asm-event-panel-placeholder"><span class="asm-loading-spinner"></span><span>데이터 불러오는 중…</span></div>';
+      } else {
+        eventPanel.innerHTML = '<div class="asm-event-panel-placeholder"><span>날짜를 선택하면<br>일정이 표시됩니다</span></div>';
+      }
+    }
 
     function selectDate(dateStr) {
       const cell = grid.querySelector(`[data-date="${dateStr}"]`);

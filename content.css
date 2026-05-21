@@ -41,6 +41,11 @@
 }
 
 /* 이전달 / 오늘 / 다음달 위치 고정 */
+.asm-panel-loading {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
 .asm-panel-nav {
   display: flex;
   align-items: center;
@@ -279,8 +284,10 @@
 .asm-cal-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
-  margin-bottom: 4px;
+  gap: 0;
+  margin-bottom: 0;
+  border-top: 1.5px solid #e2e8f0;
+  border-left: 1.5px solid #e2e8f0;
 }
 
 .asm-cal-wd {
@@ -289,6 +296,8 @@
   font-weight: 700;
   color: #94a3b8;
   padding: 4px 0;
+  border-right: 1.5px solid #e2e8f0;
+  border-bottom: 2px solid #cbd5e1;
 }
 
 .asm-cal-wd.asm-wd-weekend {
@@ -315,8 +324,9 @@
 
 /* 날짜 셀 */
 .asm-cal-day {
-  border-radius: 8px;
-  border: 1.5px solid #e2e8f0;
+  border-radius: 0;
+  border-right: 1.5px solid #e2e8f0;
+  border-bottom: 1.5px solid #e2e8f0;
   padding: 8px 6px 6px;
   height: 68px;
   min-height: 68px;
@@ -456,6 +466,29 @@
   padding: 20px 0;
 }
 
+.asm-cards-loading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 2px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.asm-loading-spinner {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  animation: asm-spin 0.75s linear infinite;
+}
+
+@keyframes asm-spin {
+  to { transform: rotate(360deg); }
+}
+
 .asm-event-panel-header {
   display: flex;
   align-items: baseline;
@@ -515,18 +548,20 @@
 
 /* 접수중: 카테고리별 색상 */
 .asm-event-card.asm-card-open.asm-cat-MRC010 {
-  border-left-color: #3b82f6;
   background: #eff6ff;
 }
-
+.asm-event-card.asm-card-open.asm-cat-MRC010 .asm-card-title::before {
+  background: #3b82f6;
+}
 .asm-event-card.asm-card-open.asm-cat-MRC020 {
-  border-left-color: #8b5cf6;
   background: #f5f3ff;
+}
+.asm-event-card.asm-card-open.asm-cat-MRC020 .asm-card-title::before {
+  background: #8b5cf6;
 }
 
 /* 회색: 마감 / 지난 강의 */
 .asm-event-card.asm-card-gray {
-  border-left-color: #cbd5e1;
   background: #f8fafc;
   opacity: 1;
 }
@@ -536,6 +571,9 @@
 .asm-event-card.asm-card-gray .asm-card-time,
 .asm-event-card.asm-card-gray .asm-cap {
   color: #94a3b8;
+}
+.asm-event-card.asm-card-gray .asm-card-title::before {
+  background: #cbd5e1;
 }
 
 /* 배지 */
@@ -599,7 +637,7 @@
 }
 
 .asm-card-title {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: #1e293b;
   line-height: 1.5;
@@ -653,108 +691,6 @@
   text-decoration: none;
   flex-shrink: 0;
 }
+.asm-card-link:hover { text-decoration: underline; }
+.asm-event-card.asm-card-gray .asm-card-link { color: #94a3b8; }
 
-.asm-card-link:hover {
-  text-decoration: underline;
-}
-
-.asm-event-card.asm-card-gray .asm-card-link {
-  color: #94a3b8;
-}
-
-/* 반응형 */
-@media (max-width: 1200px) {
-  .asm-day-cards {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  .asm-search-select {
-    flex-basis: 88px;
-    width: 88px;
-    font-size: 13px;
-  }
-
-  .asm-search-box {
-    flex-basis: 290px;
-  }
-
-  .asm-search-input::placeholder {
-    font-size: 10.5px;
-    letter-spacing: -1px;
-  }
-
-  .asm-search-btn {
-    flex-basis: 52px;
-    width: 52px;
-    font-size: 12px;
-  }
-
-  .asm-search-reset {
-    flex-basis: 60px;
-    width: 60px;
-    font-size: 12px;
-  }
-}
-
-@media (max-width: 900px) {
-  .asm-panel-body {
-    flex-direction: column;
-  }
-
-  .asm-cal-area {
-    width: 100%;
-    padding-right: 0;
-  }
-
-  .asm-event-panel {
-    width: 100%;
-    border-left: none;
-    border-top: 1px solid #e2e8f0;
-    padding-left: 0;
-    padding-top: 12px;
-    margin-top: 12px;
-  }
-
-  .asm-day-cards {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  .asm-panel-nav {
-    min-width: 270px;
-  }
-}
-
-@media (max-width: 700px) {
-  .asm-day-cards {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .asm-search-row {
-    gap: 6px;
-  }
-
-  .asm-search-select {
-    flex: 0 0 82px;
-    width: 82px;
-  }
-
-  .asm-search-box {
-    flex: 1 1 auto;
-  }
-
-  .asm-search-btn {
-    flex: 0 0 48px;
-    width: 48px;
-  }
-
-  .asm-search-reset {
-    flex: 0 0 56px;
-    width: 56px;
-  }
-}
-
-@media (max-width: 500px) {
-  .asm-day-cards {
-    grid-template-columns: repeat(1, minmax(0, 1fr));
-  }
-}
