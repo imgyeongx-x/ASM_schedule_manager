@@ -740,7 +740,7 @@
         <button id="btn-next-weeks" class="control-btn nav-btn">2주 후 ▶</button>
       </div>
       <div class="calendar-actions">
-        <button id="btn-add-personal" class="control-btn accent">➕ 개인 일정 추가</button>
+        <button id="btn-add-personal" class="control-btn accent">+ 개인 일정 추가</button>
       </div>
     `;
     calendarWrapper.appendChild(header);
@@ -817,16 +817,28 @@
       const visibleEvents = allEvents;
 
       const cell = document.createElement('div');
-      cell.className = `calendar-cell${isToday ? ' today-bg' : ''}`;
+      cell.className = 'calendar-cell';
       cell.setAttribute('data-calendar-date', dateStr);
 
       const dateHeader = document.createElement('div');
       dateHeader.className = 'calendar-date-header-row';
 
+      const dateLeft = document.createElement('div');
+      dateLeft.className = 'calendar-date-left';
+
+      if (isToday) {
+        const todayBadge = document.createElement('span');
+        todayBadge.className = 'today-badge';
+        todayBadge.textContent = '오늘';
+        dateLeft.appendChild(todayBadge);
+      }
+
       const dateSpan = document.createElement('span');
-      dateSpan.className = `calendar-date${isToday ? ' today-text' : ''}`;
-      dateSpan.textContent = formattedDateText + (isToday ? ' [오늘]' : '');
-      dateHeader.appendChild(dateSpan);
+      dateSpan.className = 'calendar-date';
+      dateSpan.textContent = formattedDateText;
+      dateLeft.appendChild(dateSpan);
+
+      dateHeader.appendChild(dateLeft);
 
       const quickAddBtn = document.createElement('button');
       quickAddBtn.className = 'quick-add-cell-btn';

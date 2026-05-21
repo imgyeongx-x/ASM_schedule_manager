@@ -119,13 +119,13 @@
 }
 
 #history-calendar .control-btn.accent {
-  background: #086DB7;
+  background: #114C9D;
   border: none;
   color: #ffffff;
 }
 
 #history-calendar .control-btn.accent:hover {
-  background: #065a99;
+  background: #0d3d7e;
   color: #ffffff;
 }
 
@@ -153,7 +153,7 @@
 
 #history-calendar .calendar-weekday-header.weekend {
   color: #ef4444;
-  background: #fef2f2;
+  background: #f8fafc;
 }
 
 /* Calendar Cells */
@@ -175,24 +175,38 @@
 }
 
 /* Today Cell Highlight */
-#history-calendar .calendar-cell.today-bg {
-  background: #eff6ff;
-  border-right-color: #bfdbfe;
-  border-bottom-color: #bfdbfe;
-  outline: 2px solid #086DB7;
-  outline-offset: -2px;
-  z-index: 1;
-}
-
-
 #history-calendar .calendar-date {
   font-size: 12px;
   font-weight: 700;
   color: #475569;
 }
 
-#history-calendar .calendar-date.today-text {
-  color: #2563eb;
+#history-calendar .calendar-date-left {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+#history-calendar .today-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #ef4444;
+  border: 1.5px solid #ef4444;
+  border-radius: 4px;
+  padding: 0 4px;
+  line-height: 16px;
+}
+
+#history-calendar .today-badge::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ef4444;
 }
 
 /* 3. Event Cards */
@@ -224,9 +238,9 @@
 }
 
 #history-calendar .calendar-lecture.event-personal {
-  border-left: 4px solid #10b981;
-  background: rgba(240, 253, 250, 0.5);
-  border-color: rgba(16, 185, 129, 0.3) rgba(226, 232, 240, 0.8) rgba(226, 232, 240, 0.8) #10b981;
+  border-left: 4px solid #16a34a;
+  background: #ffffff;
+  border-color: #e2e8f0 #e2e8f0 #e2e8f0 #16a34a;
 }
 
 /* Past Events styled with ended state */
@@ -238,6 +252,17 @@
 
 #history-calendar .calendar-lecture.ended:hover {
   opacity: 0.9;
+}
+
+#history-calendar .calendar-lecture.ended.event-personal {
+  opacity: 0.45;
+  background: #f1f5f9;
+  border-color: #e2e8f0 #e2e8f0 #e2e8f0 #94a3b8;
+  filter: grayscale(40%);
+}
+
+#history-calendar .calendar-lecture.ended.event-personal:hover {
+  opacity: 0.7;
 }
 
 /* Card details styling */
@@ -284,8 +309,8 @@
 }
 
 #history-calendar .personal-badge {
-  background: #d1fae5 !important;
-  color: #059669 !important;
+  background: #dcfce7 !important;
+  color: #16a34a !important;
 }
 
 #history-calendar .info-row {
