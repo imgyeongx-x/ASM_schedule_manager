@@ -36,12 +36,6 @@
 }
 
 .asm-panel-loading {
-  font-size: 12px;
-  color: #64748b;
-}
-
-/* 이전달 / 오늘 / 다음달 위치 고정 */
-.asm-panel-loading {
   font-size: 11px;
   color: #94a3b8;
 }
@@ -50,24 +44,28 @@
 .asm-panel-nav {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-width: 270px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .asm-panel-nav-btn {
-  flex: 0 0 82px;
-  height: 34px;
-  background: #fff;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  padding: 0 10px;
-  font-size: 14px;
+  border: none;
+  border-right: 1px solid #d1d5db;
+  border-radius: 0;
+  padding: 7px 14px;
+  font-size: 13px;
   font-weight: 600;
-  color: #334155;
+  background: #ffffff;
+  color: #374151;
   cursor: pointer;
   white-space: nowrap;
   box-sizing: border-box;
+  transition: background 0.15s;
+}
+
+.asm-panel-nav-btn:last-child {
+  border-right: none;
 }
 
 .asm-panel-nav-btn:hover {
@@ -90,22 +88,12 @@
   font-weight: 600;
 }
 
-.asm-panel-nav-btn.asm-nav-today:hover {
-  background: #dbeafe;
-}
-
-.asm-panel-nav-btn.asm-nav-today-current {
-  color: #1d4ed8;
-  border-color: #60a5fa;
-  background: #eff6ff;
-}
-
 .asm-panel-toggle {
   justify-self: end;
   background: #fff;
   border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 5px 12px;
+  border-radius: 6px;
+  padding: 4px 10px;
   font-size: 12px;
   color: #374151;
   cursor: pointer;
@@ -117,11 +105,11 @@
 
 /* 본문 */
 .asm-panel-body {
+  padding: 12px 14px;
   display: flex;
   flex-direction: row;
   align-items: flex-start;
   gap: 0;
-  padding: 12px 14px;
 }
 
 /* 달력 + 검색 묶음 */
@@ -144,7 +132,7 @@
   box-sizing: border-box;
 }
 
-/* ── 검색창 UI: 달력 위 오른쪽 정렬 ── */
+/* ── 검색창 UI ── */
 
 .asm-search-row {
   width: 100%;
@@ -163,7 +151,6 @@
   overflow: hidden;
 }
 
-/* 카테고리 select */
 .asm-search-select {
   flex: 0 0 92px;
   width: 92px;
@@ -178,7 +165,7 @@
 
   color: #444;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 400;
 
   outline: none;
   cursor: pointer;
@@ -193,15 +180,9 @@
   background-size: 11px 7px;
 }
 
-.asm-search-select:hover {
-  border-color: #94a3b8;
-}
+.asm-search-select:hover { border-color: #94a3b8; }
+.asm-search-select:focus { border-color: #64748b; }
 
-.asm-search-select:focus {
-  border-color: #64748b;
-}
-
-/* input + 검색 버튼 묶음 */
 .asm-search-box {
   flex: 0 1 330px;
   min-width: 0;
@@ -213,7 +194,6 @@
   gap: 0;
 }
 
-/* input */
 .asm-search-input {
   flex: 1 1 auto;
   min-width: 0;
@@ -229,7 +209,7 @@
 
   color: #333;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 400;
 
   outline: none;
 }
@@ -237,12 +217,11 @@
 .asm-search-input::placeholder {
   color: #777;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 400;
   letter-spacing: -0.8px;
   opacity: 1;
 }
 
-/* 검색 버튼: 선택된 날짜 색상과 동일 */
 .asm-search-btn {
   flex: 0 0 56px;
   width: 56px;
@@ -258,7 +237,7 @@
 
   color: #fff;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 600;
 
   cursor: pointer;
   white-space: nowrap;
@@ -269,7 +248,6 @@
   border-color: #1e40af;
 }
 
-/* 초기화 버튼 */
 .asm-search-reset {
   flex: 0 0 64px;
   width: 64px;
@@ -282,7 +260,7 @@
 
   color: #fff;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 600;
 
   cursor: pointer;
   white-space: nowrap;
@@ -304,8 +282,8 @@
 
 .asm-cal-wd {
   text-align: center;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
   color: #94a3b8;
   padding: 4px 0;
   border-right: 1.5px solid #e2e8f0;
@@ -320,17 +298,13 @@
 .asm-cal-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  grid-template-rows: repeat(6, 68px);
-  gap: 4px;
-  min-height: calc(68px * 6 + 4px * 5);
+  gap: 0;
+  border-left: 1.5px solid #e2e8f0;
 }
 
 /* 빈 셀 */
 .asm-cal-day.asm-cal-empty {
-  height: 68px;
-  min-height: 68px;
-  border-color: transparent;
-  background: transparent;
+  background: #f9fafb;
   pointer-events: none;
 }
 
@@ -340,15 +314,11 @@
   border-right: 1.5px solid #e2e8f0;
   border-bottom: 1.5px solid #e2e8f0;
   padding: 8px 6px 6px;
-  height: 68px;
-  min-height: 68px;
-  box-sizing: border-box;
-
+  min-height: 65px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 3px;
-
   background: #fff;
   transition: border-color 0.15s, background 0.15s;
   position: relative;
@@ -403,7 +373,7 @@
 /* 날짜 숫자 */
 .asm-cal-daynum {
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 600;
   color: #1e293b;
   line-height: 1;
 }
@@ -412,7 +382,7 @@
 .asm-cal-cnt {
   font-size: 10px;
   color: #64748b;
-  font-weight: 600;
+  font-weight: 400;
 }
 
 /* 이벤트 도트 */
@@ -432,17 +402,9 @@
   flex-shrink: 0;
 }
 
-.asm-dot-MRC010 {
-  background: #3b82f6;
-}
-
-.asm-dot-MRC020 {
-  background: #8b5cf6;
-}
-
-.asm-dot-gray {
-  background: #cbd5e1;
-}
+.asm-dot-MRC010 { background: #3b82f6; }
+.asm-dot-MRC020 { background: #8b5cf6; }
+.asm-dot-gray   { background: #cbd5e1; }
 
 .asm-dot-more {
   font-size: 9px;
@@ -450,19 +412,13 @@
   line-height: 6px;
 }
 
-/* ── 이벤트 패널 오른쪽 고정 컬럼 ── */
-
+/* ── 이벤트 패널 (오른쪽 고정 컬럼) ── */
 .asm-event-panel {
   flex: 7 1 0;
   min-width: 0;
-  box-sizing: border-box;
-
   border-left: 1px solid #e2e8f0;
   padding-left: 14px;
-
-  min-height: 0;
-  max-height: none;
-  overflow: visible;
+  min-height: 200px;
 }
 
 .asm-event-panel-placeholder {
@@ -470,8 +426,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-
-  min-height: 180px;
+  min-height: 200px;
   color: #94a3b8;
   font-size: 13px;
   text-align: center;
@@ -520,29 +475,24 @@
   color: #94a3b8;
 }
 
-/* 이벤트 카드 */
+/* ── 이벤트 카드 ── */
 .asm-day-cards {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  align-items: stretch;
 }
 
 .asm-event-card {
   display: flex;
   flex-direction: column;
   gap: 5px;
-
-  width: 100%;
-  min-width: 0;
-  max-width: none;
-  box-sizing: border-box;
-
   border-radius: 8px;
   padding: 8px 10px;
-  border-left: 3px solid transparent;
-  background: #f8fafc;
-
+  min-width: 200px;
+  max-width: 300px;
+  flex: 1 1 200px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
   transition: box-shadow 0.15s, transform 0.15s;
 }
 
@@ -557,6 +507,19 @@
 .asm-event-card[role="link"]:hover {
   transform: translateY(-1px);
   box-shadow: 0 3px 10px rgba(15, 23, 42, 0.12);
+}
+
+/* 카테고리 닷 인디케이터 */
+.asm-event-card .asm-card-title::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  vertical-align: middle;
+  margin-right: 5px;
+  flex-shrink: 0;
 }
 
 /* 접수중: 카테고리별 색상 */
@@ -576,17 +539,10 @@
   background: #8b5cf6;
 }
 
-/* 회색: 마감 / 지난 강의 */
+/* 회색 (마감 / 지난 강의) */
 .asm-event-card.asm-card-gray {
   background: #f8fafc;
-  opacity: 1;
-}
-
-.asm-event-card.asm-card-gray .asm-card-title,
-.asm-event-card.asm-card-gray .asm-card-author,
-.asm-event-card.asm-card-gray .asm-card-time,
-.asm-event-card.asm-card-gray .asm-cap {
-  color: #94a3b8;
+  opacity: 0.6;
 }
 
 .asm-event-card.asm-card-gray .asm-card-title::before {
@@ -611,48 +567,22 @@
   line-height: 1.5;
 }
 
-.asm-cat-badge.asm-cat-MRC010 {
-  background: #dbeafe;
-  color: #1d4ed8;
-}
+.asm-cat-badge.asm-cat-MRC010 { background: #dbeafe; color: #1d4ed8; }
+.asm-cat-badge.asm-cat-MRC020 { background: #ede9fe; color: #6d28d9; }
 
-.asm-cat-badge.asm-cat-MRC020 {
-  background: #ede9fe;
-  color: #6d28d9;
-}
-
-.asm-badge.asm-online {
-  background: #e0f2fe;
-  color: #0369a1;
-}
-
-.asm-badge.asm-offline {
-  background: #ffedd5;
-  color: #c2410c;
-}
-
-.asm-badge.asm-open-badge {
-  background: #dcfce7;
-  color: #15803d;
-}
-
-.asm-badge.asm-closed {
-  background: #f1f5f9;
-  color: #64748b;
-}
-
-.asm-badge.asm-done {
-  background: #f1f5f9;
-  color: #94a3b8;
-}
+.asm-badge.asm-online  { background: #e0f2fe; color: #0369a1; }
+.asm-badge.asm-offline { background: #ffedd5; color: #c2410c; }
+.asm-badge.asm-open-badge { background: #dcfce7; color: #15803d; }
+.asm-badge.asm-closed  { background: #f1f5f9; color: #64748b; }
+.asm-badge.asm-done    { background: #f1f5f9; color: #94a3b8; }
 
 .asm-cap {
   font-size: 11px;
   color: #64748b;
-  font-weight: 500;
-  min-width: 0;
+  font-weight: 400;
 }
 
+/* 제목: 전체 표시 */
 .asm-card-title {
   font-size: 13px;
   font-weight: 600;
@@ -660,11 +590,13 @@
   line-height: 1.5;
   white-space: normal;
   word-break: keep-all;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
   flex: 1;
-  min-width: 0;
 }
 
+.asm-event-card.asm-card-gray .asm-card-title { color: #94a3b8; }
+
+/* 하단: 멘토명(1행) → 시간+링크(2행) */
 .asm-card-footer {
   display: flex;
   flex-direction: column;
@@ -679,12 +611,9 @@
   font-weight: 400;
   white-space: normal;
   word-break: keep-all;
-  min-width: 0;
 }
 
-.asm-card-author::before {
-  content: "👤 ";
-}
+.asm-card-author::before { content: "👤 "; }
 
 .asm-card-footer-bottom {
   display: flex;
@@ -697,7 +626,6 @@
   font-size: 11px;
   color: #64748b;
   white-space: nowrap;
-  min-width: 0;
 }
 
 .asm-card-link {

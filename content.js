@@ -14,17 +14,9 @@
   function getMonthRange(offset = 0) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
     const base = new Date(today.getFullYear(), today.getMonth() + offset, 1);
     const end = new Date(base.getFullYear(), base.getMonth() + 1, 0);
-
-    return {
-      start: base,
-      end,
-      today,
-      year: base.getFullYear(),
-      month: base.getMonth(),
-    };
+    return { start: base, end, today, year: base.getFullYear(), month: base.getMonth() };
   }
 
   function normalizeText(text) {
@@ -36,6 +28,8 @@
   }
 
   // ── 리스트 테이블 파싱 ────────────────────────────────────────────────────
+  // td 인덱스: [0]=NO [1]=tit [2]=접수기간 [3]=진행날짜 [4]=모집인원 [5]=개설승인 [6]=상태 [7]=작성자 [8]=등록일
+  // pc_only td: [0]=NO [1]=접수기간 [2]=진행날짜 [3]=모집인원 [4]=개설승인 [5]=상태 [6]=작성자
 
   function parseTableRows(root) {
     const map = new Map();
@@ -62,6 +56,7 @@
       const statusRaw = pcTds[5] ? pcTds[5].textContent.trim() : "";
       const author = pcTds[6] ? pcTds[6].textContent.trim() : "";
 
+      // 제목: [자유 멘토링]/[멘토 특강] 접두어 제거, [온라인]/[오프라인]은 보존
       const titleRaw = link.textContent.trim();
       const title = titleRaw.replace(/^\[(자유 멘토링|멘토 특강)\]\s*/, "");
 
@@ -84,7 +79,7 @@
 
   const CACHE_KEY = "asm_event_map_v4";
   const LOC_CACHE_KEY = "asm_location_v1";
-  const CACHE_TTL = 1 * 60 * 1000;
+  const CACHE_TTL = 1 * 60 * 1000; // 1분
 
   function loadCache() {
     try {
@@ -129,6 +124,8 @@
       if (!raw) return new Map();
 
       const { ts, data } = JSON.parse(raw);
+
+      // 장소는 30분 캐시
       if (Date.now() - ts > 30 * 60 * 1000) return new Map();
 
       return new Map(data);
@@ -188,6 +185,8 @@
 
     return { type: "offline", label: "오프라인" };
   }
+
+  // ── 상세 페이지 fetch → 장소 정보 수집 ───────────────────────────────────
 
   async function fetchLocations(events) {
     const locCache = loadLocCache();
@@ -328,6 +327,7 @@
         });
       });
 
+    // 리스트 테이블에서 캘린더 DOM에 없는 이벤트 보완 (다음 달 등)
     eventMap.forEach((info, sn) => {
       if (seen.has(sn) || !info.date) return;
 
@@ -379,6 +379,13 @@
   }
 
   // ── 이벤트 정렬 유틸 ──────────────────────────────────────────────────────
+  // 정렬 기준:
+  // 1. 신청가능/접수중 위
+  // 2. 마감/진행완료 아래
+  // 3. 각 그룹 안에서 시작시간 오름차순
+  // 4. 시작시간이 같으면 멘토 이름 가나다순
+  // 5. 멘토 이름도 같으면 제목 가나다순
+  // 6. 전부 같으면 sn 기준 보조 정렬
 
   function getEventStatusGroup(ev, todayStr) {
     const isPast = ev.date < todayStr;
@@ -462,7 +469,6 @@
     card.className = `asm-event-card ${isGray ? "asm-card-gray" : "asm-card-open asm-cat-" + ev.category}`;
     card.setAttribute("role", "link");
     card.setAttribute("tabindex", "0");
-    card.style.cursor = "pointer";
 
     card.addEventListener("click", () => {
       if (ev.url && ev.url !== "#") {
@@ -485,6 +491,7 @@
     catBadge.textContent = ev.categoryNm;
     badges.appendChild(catBadge);
 
+    // 장소: 상세 페이지 데이터 우선, 없으면 제목에서 감지
     const locInfo = ev.location ? classifyLocation(ev.location) : null;
 
     if (locInfo) {
@@ -533,8 +540,18 @@
       cap.className = "asm-cap";
       cap.textContent = `${ev.current}/${ev.total}명`;
       bottom.appendChild(cap);
+    } else {
+      bottom.appendChild(document.createElement("span"));
     }
 
+    const linkEl = document.createElement("a");
+    linkEl.className = "asm-card-link";
+    linkEl.href = ev.url;
+    linkEl.target = "_blank";
+    linkEl.textContent = "바로가기 →";
+    linkEl.addEventListener("click", (e) => e.stopPropagation());
+
+    bottom.appendChild(linkEl);
     footer.appendChild(bottom);
     card.appendChild(footer);
 
@@ -570,11 +587,11 @@
     headerEl.appendChild(cntLabel);
     container.appendChild(headerEl);
 
-    if (dayEvents.length === 0) {
-      const empty = document.createElement("div");
-      empty.className = "asm-event-panel-placeholder";
-      empty.innerHTML = "<span>해당 날짜에 표시할 일정이 없습니다</span>";
-      container.appendChild(empty);
+    if (isLoading) {
+      const loadingRow = document.createElement("div");
+      loadingRow.className = "asm-cards-loading";
+      loadingRow.innerHTML = '<span class="asm-loading-spinner"></span><span>불러오는 중…</span>';
+      container.appendChild(loadingRow);
       return;
     }
 
@@ -709,7 +726,7 @@
     titleWrap.appendChild(loadingEl);
     header.appendChild(titleWrap);
 
-    // 네비게이션: 이전달 / 오늘 / 다음달 항상 표시해서 위치 고정
+    // 네비게이션: 이전달 / 오늘 / 다음달 항상 표시
     const navWrap = document.createElement("div");
     navWrap.className = "asm-panel-nav";
 
@@ -794,6 +811,10 @@
       }
     }
 
+    showPlaceholder();
+
+    let selectedDate = null;
+
     function selectDate(dateStr) {
       const cell = grid.querySelector(`[data-date="${dateStr}"]`);
       const dayEvents = byDate.get(dateStr) || [];
@@ -812,10 +833,10 @@
         sortEventsByStatusTimeAuthor(a, b, todayStr)
       );
 
-      renderEventPanel(eventPanel, sortedDayEvents, dateStr, todayStr);
+      renderEventPanel(eventPanel, sortedDayEvents, dateStr, todayStr, isLoading);
     }
 
-    // 월 첫째 날 요일 전 빈 셀
+    // 월 첫째 날 요일 전 빈 셀 (일=0 ~ 토=6)
     for (let i = 0; i < start.getDay(); i++) {
       const empty = document.createElement("div");
       empty.className = "asm-cal-day asm-cal-empty";
@@ -874,17 +895,19 @@
           dotsEl.appendChild(dot);
         });
 
-        if (sortedDayEvents.length > maxDots) {
-          const more = document.createElement("span");
-          more.className = "asm-dot-more";
-          more.textContent = `+${sortedDayEvents.length - maxDots}`;
-          dotsEl.appendChild(more);
-        }
-
         cell.appendChild(dotsEl);
       }
 
       cell.addEventListener("click", () => {
+        if (!hasEvents) return;
+
+        if (selectedDate === dateStr) {
+          selectedDate = null;
+          cell.classList.remove("asm-cal-selected");
+          showPlaceholder();
+          return;
+        }
+
         selectDate(dateStr);
       });
 
@@ -903,7 +926,6 @@
       onSearchReset || (() => {})
     );
 
-    // 핵심 수정: 검색창을 달력 바로 위에 배치
     const calArea = document.createElement("div");
     calArea.className = "asm-cal-area";
     calArea.appendChild(searchRow);
@@ -913,6 +935,7 @@
     body.appendChild(eventPanel);
     panel.appendChild(body);
 
+    // 오늘(또는 해당 달 첫 날) 자동 선택
     setTimeout(() => {
       selectDate(defaultSelectedDate);
     }, 0);
