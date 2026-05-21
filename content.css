@@ -93,8 +93,10 @@
 .asm-cal-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
-  margin-bottom: 4px;
+  gap: 0;
+  margin-bottom: 0;
+  border-top: 1.5px solid #e2e8f0;
+  border-left: 1.5px solid #e2e8f0;
 }
 
 .asm-cal-wd {
@@ -103,6 +105,8 @@
   font-weight: 600;
   color: #94a3b8;
   padding: 4px 0;
+  border-right: 1.5px solid #e2e8f0;
+  border-bottom: 2px solid #cbd5e1;
 }
 
 .asm-cal-wd.asm-wd-weekend {
@@ -113,20 +117,21 @@
 .asm-cal-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
+  gap: 0;
+  border-left: 1.5px solid #e2e8f0;
 }
 
 /* 빈 셀 (월 시작 전 패딩) */
 .asm-cal-day.asm-cal-empty {
-  border-color: transparent;
-  background: transparent;
+  background: #f9fafb;
   pointer-events: none;
 }
 
 /* 날짜 셀 */
 .asm-cal-day {
-  border-radius: 8px;
-  border: 1.5px solid #e2e8f0;
+  border-radius: 0;
+  border-right: 1.5px solid #e2e8f0;
+  border-bottom: 1.5px solid #e2e8f0;
   padding: 8px 6px 6px;
   min-height: 65px;
   display: flex;
