@@ -610,10 +610,10 @@
   function createSearchRow(searchDraft, onSearchChange, onSearchSubmit, onSearchReset) {
     const row = document.createElement("div");
     row.className = "asm-search-row";
+    let isComposing = false;
 
     const select = document.createElement("select");
     select.className = "asm-search-select";
-    select.value = searchDraft.type;
 
     const titleOption = document.createElement("option");
     titleOption.value = "title";
@@ -625,6 +625,7 @@
 
     select.appendChild(titleOption);
     select.appendChild(authorOption);
+    select.value = searchDraft.type;
 
     const input = document.createElement("input");
     input.className = "asm-search-input";
@@ -650,7 +651,20 @@
       onSearchChange(select.value, input.value);
     });
 
+    input.addEventListener("compositionstart", () => {
+      isComposing = true;
+    });
+
+    input.addEventListener("compositionend", () => {
+      isComposing = false;
+      onSearchChange(select.value, input.value);
+    });
+
     input.addEventListener("keydown", (e) => {
+      if (e.isComposing || isComposing || e.keyCode === 229) {
+        return;
+      }
+
       if (e.key === "Enter") {
         e.preventDefault();
         onSearchSubmit(select.value, input.value);
