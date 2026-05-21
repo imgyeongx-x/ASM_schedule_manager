@@ -46,6 +46,47 @@
   flex-wrap: wrap;
 }
 
+/* Navigation Group: 2주 전 | 오늘 | 2주 후 */
+#history-calendar .calendar-nav-group {
+  display: flex;
+  align-items: center;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+#history-calendar .control-btn.nav-btn {
+  border: none;
+  border-radius: 0;
+  border-right: 1px solid #d1d5db;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #ffffff;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+#history-calendar .control-btn.nav-btn:last-child {
+  border-right: none;
+}
+
+#history-calendar .control-btn.nav-btn:hover {
+  background: #f1f5f9;
+  transform: none;
+}
+
+#history-calendar .control-btn.nav-btn.nav-today {
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
+#history-calendar .control-btn.nav-btn.nav-today:hover {
+  background: #dbeafe;
+}
+
 #history-calendar .control-btn {
   font-size: 13px;
   font-weight: 600;
@@ -91,63 +132,72 @@
   color: #ffffff;
 }
 
-/* 2. Calendar Grid */
+/* 2. Calendar Grid — cross/table style */
 #history-calendar .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 12px;
-  align-items: start;
+  gap: 0;
+  border-top: 1.5px solid #cbd5e1;
+  border-left: 1.5px solid #cbd5e1;
 }
 
-/* Responsive Grid columns */
-@media (max-width: 1200px) {
-  #history-calendar .calendar-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
+/* Weekday Header Row */
+#history-calendar .calendar-weekday-header {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  padding: 8px 4px;
+  background: #f8fafc;
+  border-right: 1.5px solid #cbd5e1;
+  border-bottom: 2px solid #cbd5e1;
+  letter-spacing: 0.5px;
 }
-@media (max-width: 768px) {
-  #history-calendar .calendar-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-@media (max-width: 480px) {
-  #history-calendar .calendar-grid {
-    grid-template-columns: 1fr;
-  }
+
+#history-calendar .calendar-weekday-header.weekend {
+  color: #ef4444;
+  background: #fef2f2;
 }
 
 /* Calendar Cells */
 #history-calendar .calendar-cell {
-  background: #f8fafc;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 12px;
-  min-height: 100px;
+  background: #ffffff;
+  border-right: 1.5px solid #e2e8f0;
+  border-bottom: 1.5px solid #e2e8f0;
+  border-radius: 0;
+  padding: 8px;
+  min-height: 120px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  transition: all 0.2s ease;
+  gap: 6px;
+  transition: background 0.15s;
 }
 
 #history-calendar .calendar-cell:hover {
-  background: #f1f5f9;
-  border-color: #cbd5e1;
+  background: #f8fafc;
 }
 
 /* Today Cell Highlight */
 #history-calendar .calendar-cell.today-bg {
   background: #eff6ff;
-  border: 1.5px solid #3b82f6;
+  border-right-color: #bfdbfe;
+  border-bottom-color: #bfdbfe;
+  outline: 2px solid #3b82f6;
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+/* Dimmed empty past cell (hideEndedLectures mode) */
+#history-calendar .calendar-cell.calendar-cell-dimmed {
+  background: #f9fafb;
+  opacity: 0.45;
+  pointer-events: none;
 }
 
 #history-calendar .calendar-date {
   font-size: 12px;
   font-weight: 700;
   color: #475569;
-  padding-bottom: 4px;
-  border-bottom: 1px dashed rgba(226, 232, 240, 0.8);
-  display: flex;
-  justify-content: space-between;
 }
 
 #history-calendar .calendar-date.today-text {
@@ -599,8 +649,8 @@
   justify-content: space-between;
   align-items: center;
   padding-bottom: 4px;
-  border-bottom: 1px dashed rgba(226, 232, 240, 0.8);
-  margin-bottom: 6px;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 4px;
 }
 
 #history-calendar .quick-add-cell-btn {

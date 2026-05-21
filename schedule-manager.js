@@ -6,7 +6,7 @@
 
   // 10 minutes cache TTL for future SOMA lectures
   const CACHE_TTL_MS = 10 * 60 * 1000;
-  const CALENDAR_DAY_COUNT = 30;
+  const CALENDAR_DAY_COUNT = 28;
   const CALENDAR_SHIFT_WEEKS = 2;
   const FIXED_SHARED_SCHEDULES = [
     {
@@ -664,8 +664,11 @@
         <span class="calendar-subtitle">접수한 일정과 내 개인 일정을 함께 모아 관리합니다.</span>
       </div>
       <div class="calendar-controls">
-        <button id="btn-prev-weeks" class="control-btn">⬆ 이전 2주 보기</button>
-        <button id="btn-reset-weeks" class="control-btn secondary" ${startOffsetWeeks === 0 ? 'hidden' : ''}>↩ 이번주부터 보기</button>
+        <div class="calendar-nav-group">
+          <button id="btn-prev-weeks" class="control-btn nav-btn">◀ 2주 전</button>
+          <button id="btn-today" class="control-btn nav-btn nav-today">오늘</button>
+          <button id="btn-next-weeks" class="control-btn nav-btn">2주 후 ▶</button>
+        </div>
         <button id="btn-toggle-ended" class="control-btn secondary">${hideEndedLectures ? '👁️ 종료된 일정 표시' : '👁️ 종료된 일정 숨기기'}</button>
         <button id="btn-add-personal" class="control-btn accent">➕ 개인 일정 추가</button>
         <button id="btn-clear-cache" class="control-btn secondary" title="장소 정보 캐시를 초기화하고 다시 불러옵니다">🗑️ 캐시 지우기</button>
@@ -677,6 +680,16 @@
     const grid = document.createElement('div');
     grid.className = 'calendar-grid';
 
+    const dayKorean = ['일', '월', '화', '수', '목', '금', '토'];
+
+    // Weekday header row
+    dayKorean.forEach((wd, idx) => {
+      const wdHeader = document.createElement('div');
+      wdHeader.className = `calendar-weekday-header${idx === 0 || idx === 6 ? ' weekend' : ''}`;
+      wdHeader.textContent = wd;
+      grid.appendChild(wdHeader);
+    });
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -685,8 +698,6 @@
 
     const startDate = new Date(SundayOfCurrentWeek);
     startDate.setDate(startDate.getDate() + (startOffsetWeeks * 7));
-
-    const dayKorean = ['일', '월', '화', '수', '목', '금', '토'];
 
     for (let i = 0; i < CALENDAR_DAY_COUNT; i++) {
       const currentDate = new Date(startDate);
@@ -739,8 +750,16 @@
         ? allEvents.filter(e => !e.ended)
         : allEvents;
 
-      // Skip rendering empty past cells to clean layout
+      // Render empty placeholder to preserve grid alignment
       if (hideEndedLectures && currentDate < today && visibleEvents.length === 0) {
+        const emptyCell = document.createElement('div');
+        emptyCell.className = 'calendar-cell calendar-cell-dimmed';
+        emptyCell.setAttribute('data-calendar-date', dateStr);
+        const emptyDateSpan = document.createElement('span');
+        emptyDateSpan.className = 'calendar-date';
+        emptyDateSpan.textContent = `${currentDate.getMonth() + 1}/${currentDate.getDate()}`;
+        emptyCell.appendChild(emptyDateSpan);
+        grid.appendChild(emptyCell);
         continue;
       }
 
@@ -900,13 +919,15 @@
       renderCalendar(lectures);
     });
 
-    const resetWeeksBtn = document.getElementById('btn-reset-weeks');
-    if (resetWeeksBtn) {
-      resetWeeksBtn.addEventListener('click', () => {
-        startOffsetWeeks = 0;
-        renderCalendar(lectures);
-      });
-    }
+    document.getElementById('btn-today').addEventListener('click', () => {
+      startOffsetWeeks = 0;
+      renderCalendar(lectures);
+    });
+
+    document.getElementById('btn-next-weeks').addEventListener('click', () => {
+      startOffsetWeeks += CALENDAR_SHIFT_WEEKS;
+      renderCalendar(lectures);
+    });
 
     document.getElementById('btn-toggle-ended').addEventListener('click', () => {
       hideEndedLectures = !hideEndedLectures;
