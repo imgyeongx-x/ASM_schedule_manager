@@ -48,7 +48,10 @@
 
       const dateTimeRaw = pcTds[2] ? pcTds[2].textContent : "";
       const dateMatch = dateTimeRaw.match(/(\d{4}-\d{2}-\d{2})/);
-      const timeMatch = dateTimeRaw.match(/(\d{2}:\d{2})\s*시?\s*~\s*(\d{2}:\d{2})\s*시?/);
+      // 날짜와 시간을 함께 매칭해 접수기간 날짜를 강의 시간으로 잘못 조합하는 버그 방지
+      const fullTimeMatch = dateTimeRaw.match(
+        /(\d{4}-\d{2}-\d{2})(?:\([^)]+\))?\s+(\d{2}:\d{2})\s*시?\s*~\s*(\d{2}:\d{2})\s*시?/
+      );
 
       const capRaw = pcTds[3] ? pcTds[3].textContent : "";
       const capMatch = capRaw.match(/(\d+)\s*\/\s*(\d+)/);
@@ -63,8 +66,8 @@
       map.set(sn, {
         date: dateMatch ? dateMatch[1] : "",
         title,
-        timeStart: timeMatch ? timeMatch[1] : "",
-        timeEnd: timeMatch ? timeMatch[2] : "",
+        timeStart: fullTimeMatch ? fullTimeMatch[2] : "",
+        timeEnd: fullTimeMatch ? fullTimeMatch[3] : "",
         current: capMatch ? capMatch[1] : "",
         total: capMatch ? capMatch[2] : "",
         isClosed: statusRaw.includes("마감"),
@@ -249,17 +252,19 @@
 
           if (!rawText) return;
 
-          const dateMatch = rawText.match(/(\d{4})[-./](\d{2})[-./](\d{2})/);
-          const timeMatch = rawText.match(/(\d{2}:\d{2})\s*~\s*(\d{2}:\d{2})/);
+          // 날짜+시간을 하나의 패턴으로 매칭해 접수기간 날짜와 강의시간이 섞이는 버그 방지
+          const fullMatch = rawText.match(
+            /(\d{4})[-./](\d{2})[-./](\d{2})(?:\([^)]+\))?\s+(\d{2}:\d{2})\s*시?\s*~\s*(\d{2}:\d{2})\s*시?/
+          );
 
-          if (!dateMatch || !timeMatch) return;
+          if (!fullMatch) return;
 
           schedules.push({
             qustnrSn,
             title,
-            dateStr: `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}`,
-            startTime: timeMatch[1],
-            endTime: timeMatch[2],
+            dateStr: `${fullMatch[1]}-${fullMatch[2]}-${fullMatch[3]}`,
+            startTime: fullMatch[4],
+            endTime: fullMatch[5],
           });
         });
 
