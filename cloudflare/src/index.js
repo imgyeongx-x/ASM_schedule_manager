@@ -100,16 +100,29 @@ async function handleScheduleSync(request, env, options = {}) {
     .bind(userId)
     .first();
 
-  if (options.publicMode && existingUser?.client_token && existingUser.client_token !== clientToken) {
+  const hasStoredClientToken = Boolean(existingUser?.client_token);
+  const clientTokenMatches = hasStoredClientToken && existingUser.client_token === clientToken;
+  const webhookMatches = existingUser &&
+    (existingUser.discord_webhook_url || "") === desiredUser.discord_webhook_url;
+  const canRotateClientToken = options.publicMode &&
+    hasStoredClientToken &&
+    !clientTokenMatches &&
+    webhookMatches;
+
+  if (options.publicMode && hasStoredClientToken && !clientTokenMatches && !canRotateClientToken) {
     return json({ error: "Invalid client token" }, 403, request);
   }
+
+  const nextClientToken = options.publicMode
+    ? ((!hasStoredClientToken || canRotateClientToken) ? clientToken : existingUser.client_token)
+    : (existingUser?.client_token || "");
 
   if (
     !existingUser ||
     existingUser.display_name !== desiredUser.display_name ||
     (existingUser.discord_webhook_url || "") !== desiredUser.discord_webhook_url ||
     Number(existingUser.notify_enabled || 0) !== desiredUser.notify_enabled ||
-    (options.publicMode && !existingUser.client_token)
+    (options.publicMode && (!hasStoredClientToken || canRotateClientToken))
   ) {
     await env.DB.prepare(`
       INSERT INTO users (
@@ -124,10 +137,7 @@ async function handleScheduleSync(request, env, options = {}) {
         display_name = excluded.display_name,
         discord_webhook_url = excluded.discord_webhook_url,
         notify_enabled = excluded.notify_enabled,
-        client_token = CASE
-          WHEN users.client_token IS NULL OR users.client_token = '' THEN excluded.client_token
-          ELSE users.client_token
-        END,
+        client_token = excluded.client_token,
         updated_at = excluded.updated_at
     `)
       .bind(
@@ -135,7 +145,7 @@ async function handleScheduleSync(request, env, options = {}) {
         desiredUser.display_name,
         desiredUser.discord_webhook_url,
         desiredUser.notify_enabled,
-        options.publicMode ? clientToken : (existingUser?.client_token || ""),
+        nextClientToken,
         nowIso
       )
       .run();

@@ -439,6 +439,16 @@
       });
     } catch (error) {
       console.error('Failed to toggle alarm notifications:', error);
+      await saveAlarmSettings(currentSettings);
+      alert(error.message || '알림 설정 변경에 실패했습니다.');
+      if (typeof onChanged === 'function') {
+        await onChanged();
+      }
+      return {
+        configured: true,
+        notificationsEnabled: currentSettings.notificationsEnabled,
+        error
+      };
     }
 
     if (typeof onChanged === 'function') {
