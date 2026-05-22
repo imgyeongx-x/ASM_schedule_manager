@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY,
   display_name TEXT NOT NULL,
   discord_webhook_url TEXT DEFAULT '',
+  client_token TEXT DEFAULT '',
   notify_enabled INTEGER NOT NULL DEFAULT 1,
   updated_at TEXT NOT NULL
 );

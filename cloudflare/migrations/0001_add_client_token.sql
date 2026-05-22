@@ -1,0 +1,1 @@
+ALTER TABLE users ADD COLUMN client_token TEXT DEFAULT '';

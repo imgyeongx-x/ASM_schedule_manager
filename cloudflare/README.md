@@ -6,7 +6,7 @@
 
 - 확장 프로그램이 신청한 멘토링 일정을 `/api/public/schedules/sync`로 전송
 - Worker가 D1에 일정과 알림 채널 설정 저장
-- Cron Trigger가 1분마다 실행되어 알림이 켜진 사용자에게 **멘토링 시작 1시간 전 Discord 알림 발송 (개인일정은 알림 제외)**
+- Cron Trigger가 5분마다 실행되어 알림이 켜진 사용자에게 **멘토링 시작 1시간 전 Discord 알림 발송 (개인일정은 알림 제외)**
 
 ## 준비
 
@@ -26,6 +26,13 @@ npx wrangler secret put API_TOKEN
 npx wrangler deploy
 ```
 
+기존 D1 데이터베이스를 운영 중이면 `schema.sql`을 다시 실행하지 말고 migration만 적용합니다.
+
+```bash
+cd cloudflare
+npx wrangler d1 migrations apply asm-schedule-db
+```
+
 ## 확장 프로그램 설정값
 
 최초 1회만 아래 값을 저장합니다.
@@ -39,6 +46,7 @@ npx wrangler deploy
 ```json
 {
   "userId": "user@soma.or.kr",
+  "clientToken": "64-character-random-client-token",
   "userLabel": "재민",
   "notifyEnabled": true,
   "notificationTargets": {

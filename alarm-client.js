@@ -7,6 +7,21 @@
 
   let lastAutoSyncSignature = '';
 
+  function createClientToken() {
+    const bytes = new Uint8Array(32);
+    if (globalThis.crypto?.getRandomValues) {
+      globalThis.crypto.getRandomValues(bytes);
+      return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+    }
+
+    return Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+  }
+
+  function normalizeClientToken(token) {
+    const normalized = (token || '').trim();
+    return /^[a-f0-9]{64}$/i.test(normalized) ? normalized.toLowerCase() : createClientToken();
+  }
+
   function parseLectureDateTimeText(dateTimeText) {
     if (!dateTimeText) return null;
 
@@ -89,6 +104,7 @@
       userId: (input.userId || '').trim().toLowerCase(),
       userLabel: (input.userLabel || '').trim(),
       discordWebhookUrl: (input.discordWebhookUrl || '').trim(),
+      clientToken: normalizeClientToken(input.clientToken),
       notificationsEnabled: input.notificationsEnabled !== false,
       autoSyncEnabled: input.autoSyncEnabled !== false
     };
@@ -97,7 +113,13 @@
   async function loadAlarmSettings() {
     return new Promise(resolve => {
       chrome.storage.local.get([ALARM_SETTINGS_KEY], (result) => {
-        resolve(sanitizeAlarmSettings(result[ALARM_SETTINGS_KEY] || {}));
+        const stored = result[ALARM_SETTINGS_KEY] || {};
+        const sanitized = sanitizeAlarmSettings(stored);
+        if (sanitized.clientToken !== stored.clientToken) {
+          chrome.storage.local.set({ [ALARM_SETTINGS_KEY]: sanitized }, () => resolve(sanitized));
+          return;
+        }
+        resolve(sanitized);
       });
     });
   }
@@ -206,6 +228,7 @@
 
     return {
       userId: deriveAlarmUserId(settings) || 'default-user',
+      clientToken: settings.clientToken,
       userLabel: settings.userLabel || '',
       notifyEnabled: settings.notificationsEnabled,
       notificationTargets: {
@@ -226,6 +249,7 @@
   function getAlarmPayloadSignature(payload) {
     return JSON.stringify({
       userId: payload.userId,
+      clientToken: payload.clientToken,
       userLabel: payload.userLabel,
       notifyEnabled: payload.notifyEnabled,
       notificationTargets: payload.notificationTargets,

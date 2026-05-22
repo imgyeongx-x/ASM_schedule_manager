@@ -6,7 +6,8 @@
   "scripts": {
     "deploy": "wrangler deploy",
     "dev": "wrangler dev",
-    "db:migrate": "wrangler d1 execute asm-schedule-db --file=./schema.sql"
+    "db:migrate": "wrangler d1 execute asm-schedule-db --file=./schema.sql",
+    "db:migrations:apply": "wrangler d1 migrations apply asm-schedule-db"
   },
   "devDependencies": {
     "wrangler": "^4.18.0"

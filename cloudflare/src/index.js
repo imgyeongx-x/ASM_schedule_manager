@@ -41,7 +41,7 @@ export default {
     }
 
     if (request.method === "POST" && url.pathname === "/api/public/notifications/test") {
-      return handleTestNotification(request, env, { requireAuth: false });
+      return json({ error: "Public test notifications are disabled" }, 410, request);
     }
 
     return json({ error: "Not found" }, 404, request);
@@ -77,6 +77,7 @@ async function handleScheduleSync(request, env, options = {}) {
 
   const nowIso = new Date().toISOString();
   const userId = payload.userId.trim();
+  const clientToken = (payload.clientToken || "").trim();
   const userLabel = (payload.userLabel || "").trim();
   const discordWebhookUrl = (payload.notificationTargets.discordWebhookUrl || "").trim();
   const notifyEnabled = Boolean(payload.notifyEnabled);
@@ -90,7 +91,8 @@ async function handleScheduleSync(request, env, options = {}) {
     SELECT
       display_name,
       discord_webhook_url,
-      notify_enabled
+      notify_enabled,
+      client_token
     FROM users
     WHERE id = ?
     LIMIT 1
@@ -98,11 +100,16 @@ async function handleScheduleSync(request, env, options = {}) {
     .bind(userId)
     .first();
 
+  if (options.publicMode && existingUser?.client_token && existingUser.client_token !== clientToken) {
+    return json({ error: "Invalid client token" }, 403, request);
+  }
+
   if (
     !existingUser ||
     existingUser.display_name !== desiredUser.display_name ||
     (existingUser.discord_webhook_url || "") !== desiredUser.discord_webhook_url ||
-    Number(existingUser.notify_enabled || 0) !== desiredUser.notify_enabled
+    Number(existingUser.notify_enabled || 0) !== desiredUser.notify_enabled ||
+    (options.publicMode && !existingUser.client_token)
   ) {
     await env.DB.prepare(`
       INSERT INTO users (
@@ -110,12 +117,17 @@ async function handleScheduleSync(request, env, options = {}) {
         display_name,
         discord_webhook_url,
         notify_enabled,
+        client_token,
         updated_at
-      ) VALUES (?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         display_name = excluded.display_name,
         discord_webhook_url = excluded.discord_webhook_url,
         notify_enabled = excluded.notify_enabled,
+        client_token = CASE
+          WHEN users.client_token IS NULL OR users.client_token = '' THEN excluded.client_token
+          ELSE users.client_token
+        END,
         updated_at = excluded.updated_at
     `)
       .bind(
@@ -123,6 +135,7 @@ async function handleScheduleSync(request, env, options = {}) {
         desiredUser.display_name,
         desiredUser.discord_webhook_url,
         desiredUser.notify_enabled,
+        options.publicMode ? clientToken : (existingUser?.client_token || ""),
         nowIso
       )
       .run();
@@ -309,6 +322,9 @@ async function handleTestNotification(request, env, options = {}) {
 function validateSyncPayload(payload, options = {}) {
   if (!payload || typeof payload !== "object") return "Payload is required";
   if (!payload.userId || typeof payload.userId !== "string") return "userId is required";
+  if (options.publicMode && !/^[a-f0-9]{64}$/i.test((payload.clientToken || "").trim())) {
+    return "A valid client token is required";
+  }
   if (!Array.isArray(payload.schedules)) return "schedules must be an array";
   if (payload.schedules.length > 200) return "schedules must not exceed 200 items";
   if (typeof payload.notifyEnabled !== "boolean") {
