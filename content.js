@@ -230,6 +230,19 @@
     return { type: "offline", label: "오프라인" };
   }
 
+  function getSafeSomaUrl(url) {
+    try {
+      const parsed = new URL(url, window.location.origin);
+      if (
+        parsed.protocol === "https:" &&
+        /(^|\.)swmaestro\.(ai|org)$/i.test(parsed.hostname)
+      ) {
+        return parsed.toString();
+      }
+    } catch (_) {}
+    return "";
+  }
+
   function loadPersonalSchedules() {
     return new Promise((resolve) => {
       chrome.storage.local.get(["soma_personal_schedules"], (res) => {
@@ -509,8 +522,9 @@
       const pageNums = [];
       for (let i = 2; i <= totalPages; i++) pageNums.push(i);
 
-      const results = await Promise.allSettled(
-        pageNums.map((n) => fetchPageMap(n, baseUrl))
+      const results = await fetchInBatches(
+        pageNums.map((n) => () => fetchPageMap(n, baseUrl)),
+        3
       );
 
       results.forEach((r) => {
@@ -725,15 +739,17 @@
     card.setAttribute("tabindex", "0");
 
     card.addEventListener("click", () => {
-      if (ev.url && ev.url !== "#") {
-        window.open(ev.url, "_blank");
+      const safeUrl = getSafeSomaUrl(ev.url);
+      if (safeUrl) {
+        window.open(safeUrl, "_blank", "noopener");
       }
     });
 
     card.addEventListener("keydown", (e) => {
-      if ((e.key === "Enter" || e.key === " ") && ev.url && ev.url !== "#") {
+      const safeUrl = getSafeSomaUrl(ev.url);
+      if ((e.key === "Enter" || e.key === " ") && safeUrl) {
         e.preventDefault();
-        window.open(ev.url, "_blank");
+        window.open(safeUrl, "_blank", "noopener");
       }
     });
 
@@ -813,7 +829,7 @@
 
     const linkEl = document.createElement("a");
     linkEl.className = "asm-card-link";
-    linkEl.href = ev.url;
+    linkEl.href = getSafeSomaUrl(ev.url) || "#";
     linkEl.target = "_blank";
     linkEl.textContent = "바로가기 →";
     linkEl.addEventListener("click", (e) => e.stopPropagation());

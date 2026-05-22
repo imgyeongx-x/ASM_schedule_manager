@@ -1,3 +1,7 @@
+const ALLOWED_FETCH_ORIGINS = new Set([
+  'https://asm-schedule-alarm.pa6764.workers.dev'
+]);
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.type !== 'asm-worker-fetch') return undefined;
 
@@ -9,7 +13,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   (async () => {
     try {
-      const response = await fetch(url, options);
+      const targetUrl = new URL(url);
+      if (!ALLOWED_FETCH_ORIGINS.has(targetUrl.origin)) {
+        sendResponse({ ok: false, status: 403, error: 'Blocked extension fetch target.' });
+        return;
+      }
+
+      const response = await fetch(targetUrl.toString(), options);
       const text = await response.text();
 
       sendResponse({

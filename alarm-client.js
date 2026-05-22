@@ -22,6 +22,14 @@
     return /^[a-f0-9]{64}$/i.test(normalized) ? normalized.toLowerCase() : createClientToken();
   }
 
+  function escapeAttribute(value) {
+    return String(value || '')
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
   function parseLectureDateTimeText(dateTimeText) {
     if (!dateTimeText) return null;
 
@@ -361,15 +369,15 @@
           <div class="alarm-settings-grid">
             <label class="alarm-settings-field">
               <span>소마 계정 이메일</span>
-              <input type="email" name="userId" placeholder="예: user@soma.or.kr" value="${currentSettings.userId}">
+              <input type="email" name="userId" placeholder="예: user@soma.or.kr" value="${escapeAttribute(currentSettings.userId)}">
             </label>
             <label class="alarm-settings-field">
               <span>표시 이름</span>
-              <input type="text" name="userLabel" placeholder="예: 김소마" value="${currentSettings.userLabel}">
+              <input type="text" name="userLabel" placeholder="예: 김소마" value="${escapeAttribute(currentSettings.userLabel)}">
             </label>
             <label class="alarm-settings-field alarm-settings-field--full">
               <span>Discord Webhook URL</span>
-              <input type="url" name="discordWebhookUrl" placeholder="https://discord.com/api/webhooks/..." value="${currentSettings.discordWebhookUrl}">
+              <input type="url" name="discordWebhookUrl" placeholder="https://discord.com/api/webhooks/..." value="${escapeAttribute(currentSettings.discordWebhookUrl)}">
             </label>
           </div>
           <div class="alarm-settings-actions">

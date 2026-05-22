@@ -7,7 +7,9 @@
     "storage"
   ],
   "host_permissions": [
-    "https://*/*"
+    "https://*.swmaestro.ai/*",
+    "https://*.swmaestro.org/*",
+    "https://asm-schedule-alarm.pa6764.workers.dev/*"
   ],
   "background": {
     "service_worker": "background.js"

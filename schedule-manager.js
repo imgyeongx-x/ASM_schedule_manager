@@ -4,8 +4,8 @@
 (async function () {
   'use strict';
 
-  // 10 minutes cache TTL for future SOMA lectures
-  const CACHE_TTL_MS = 10 * 60 * 1000;
+  // Stable lecture detail fields rarely change; keep a longer cache to avoid repeated SOMA detail-page requests.
+  const CACHE_TTL_MS = 4 * 60 * 60 * 1000;
   const CALENDAR_DAY_COUNT = 14;
   const CALENDAR_SHIFT_WEEKS = 2;
   const FIXED_SHARED_SCHEDULES = [
@@ -23,6 +23,28 @@
   // Extension State
   let startOffsetWeeks = 0; // 0 means starting from the Sunday of current week
   let editingScheduleId = null;
+
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function getSafeSomaUrl(url) {
+    try {
+      const parsed = new URL(url, window.location.origin);
+      if (
+        parsed.protocol === 'https:' &&
+        /(^|\.)swmaestro\.(ai|org)$/i.test(parsed.hostname)
+      ) {
+        return parsed.toString();
+      }
+    } catch (_) {}
+    return '';
+  }
 
   function getAlarmFeature() {
     return globalThis.ASMAlarmFeature || null;
@@ -1055,14 +1077,14 @@
 
           const badgeText = ps.isFixedShared ? '📌 공통 일정' : '👤 개인 일정';
           const locationLabel = ps.locationType === 'offline' ? '오프라인' : (ps.locationType === 'online' ? '온라인' : '');
-          const locationDetail = ps.location ? ` · ${ps.location}` : '';
+          const locationDetail = ps.location ? ` · ${escapeHtml(ps.location)}` : '';
           card.innerHTML = `
             <div class="info-group">
-              <div class="text-title" data-role="title">${ps.title}</div>
-              <div class="text-type-badge personal-badge">${badgeText}</div>
-              <div class="info-row" data-role="time"><strong>시간</strong> ${ps.startTime} ~ ${ps.endTime}</div>
-              ${ps.locationType ? `<div class="info-row" data-role="location"><strong>장소</strong> ${locationLabel}${locationDetail}</div>` : ''}
-              ${ps.description ? `<div class="info-row desc-row" data-role="desc"><strong>메모</strong> ${ps.description}</div>` : ''}
+              <div class="text-title" data-role="title">${escapeHtml(ps.title)}</div>
+              <div class="text-type-badge personal-badge">${escapeHtml(badgeText)}</div>
+              <div class="info-row" data-role="time"><strong>시간</strong> ${escapeHtml(ps.startTime)} ~ ${escapeHtml(ps.endTime)}</div>
+              ${ps.locationType ? `<div class="info-row" data-role="location"><strong>장소</strong> ${escapeHtml(locationLabel)}${locationDetail}</div>` : ''}
+              ${ps.description ? `<div class="info-row desc-row" data-role="desc"><strong>메모</strong> ${escapeHtml(ps.description)}</div>` : ''}
             </div>
           `;
 
@@ -1128,16 +1150,16 @@
 
           const infoLink = document.createElement('a');
           infoLink.className = 'info-group';
-          infoLink.href = lec.url || 'javascript:void(0);';
+          infoLink.href = getSafeSomaUrl(lec.url) || '#';
           infoLink.innerHTML = `
-            <div class="text-title" data-role="title">${lec.title}</div>
-            <div class="text-type-badge">${lec.type}</div>
-            <div class="info-row" data-role="mentor"><strong>멘토</strong> ${lec.mentorName}</div>
-            <div class="info-row" data-role="time"><strong>시간</strong> ${timeStr}</div>
-            <div class="info-row" data-role="location"><strong>장소</strong> ${lec.location}</div>
-            <div class="info-row" data-role="people"><strong>신청인원</strong> ${lec.people}</div>
-            <div class="info-row" data-role="approval"><strong>개설승인</strong> ${lec.approvalStatus}</div>
-            <div class="info-row" data-role="status"><strong>상태</strong> ${lec.deadlineStatus}</div>
+            <div class="text-title" data-role="title">${escapeHtml(lec.title)}</div>
+            <div class="text-type-badge">${escapeHtml(lec.type)}</div>
+            <div class="info-row" data-role="mentor"><strong>멘토</strong> ${escapeHtml(lec.mentorName)}</div>
+            <div class="info-row" data-role="time"><strong>시간</strong> ${escapeHtml(timeStr)}</div>
+            <div class="info-row" data-role="location"><strong>장소</strong> ${escapeHtml(lec.location)}</div>
+            <div class="info-row" data-role="people"><strong>신청인원</strong> ${escapeHtml(lec.people)}</div>
+            <div class="info-row" data-role="approval"><strong>개설승인</strong> ${escapeHtml(lec.approvalStatus)}</div>
+            <div class="info-row" data-role="status"><strong>상태</strong> ${escapeHtml(lec.deadlineStatus)}</div>
           `;
           card.appendChild(infoLink);
 
@@ -1378,6 +1400,7 @@
     if (existing) existing.remove();
     
     const mentoringTime = detailText.replace(/^멘토링 시간:\s*/, '') || '확인 불가';
+    const manageUrl = getPersonalScheduleManageUrl();
     
     const banner = document.createElement('div');
     banner.id = 'soma-conflict-banner';
@@ -1393,18 +1416,18 @@
           <div class="timeline-rows">
             <div class="timeline-row">
               <span class="timeline-label label-mentoring">아래 멘토링 시간</span>
-              <span class="timeline-value">${mentoringTime}</span>
+              <span class="timeline-value">${escapeHtml(mentoringTime)}</span>
             </div>
             <div class="timeline-row">
               <span class="timeline-label label-personal">개인 일정</span>
               <span class="timeline-value">
-                <strong class="personal-title">"${schedule.title}"</strong>
-                <span class="personal-time">(${schedule.startTime} ~ ${schedule.endTime})</span>
+                <strong class="personal-title">"${escapeHtml(schedule.title)}"</strong>
+                <span class="personal-time">(${escapeHtml(schedule.startTime)} ~ ${escapeHtml(schedule.endTime)})</span>
               </span>
             </div>
           </div>
           <div class="timeline-action">
-            <a class="conflict-link-btn" href="${getPersonalScheduleManageUrl()}">개인 일정 수정하기</a>
+            <a class="conflict-link-btn" href="${escapeHtml(manageUrl)}">개인 일정 수정하기</a>
           </div>
         </div>
       </div>
@@ -1441,13 +1464,13 @@
           <div class="timeline-rows">
             <div class="timeline-row">
               <span class="timeline-label label-mentoring">아래 멘토링 시간</span>
-              <span class="timeline-value">${mentoringTime}</span>
+              <span class="timeline-value">${escapeHtml(mentoringTime)}</span>
             </div>
             <div class="timeline-row">
               <span class="timeline-label label-personal">기존 멘토링 시간</span>
               <span class="timeline-value">
-                <strong class="personal-title">"${conflictingLecture.title}"</strong>
-                <span class="personal-time">(${conflictingLecture.startTime} ~ ${conflictingLecture.endTime})</span>
+                <strong class="personal-title">"${escapeHtml(conflictingLecture.title)}"</strong>
+                <span class="personal-time">(${escapeHtml(conflictingLecture.startTime)} ~ ${escapeHtml(conflictingLecture.endTime)})</span>
               </span>
             </div>
           </div>
@@ -1633,12 +1656,26 @@
     }
     else if (path.includes('/mypage/mentoLec/view.do')) {
       try {
-        await checkLectureConflictWithRetry();
+        let conflictCheckTimer = null;
+        let conflictCheckRunning = false;
+
+        const runConflictCheck = async () => {
+          if (conflictCheckRunning) return;
+          conflictCheckRunning = true;
+          try {
+            await checkLectureConflictWithRetry();
+          } catch (e) {
+            console.error('Failed to re-run scheduling conflict checker:', e);
+          } finally {
+            conflictCheckRunning = false;
+          }
+        };
+
+        await runConflictCheck();
 
         const observer = new MutationObserver(() => {
-          checkLectureConflictWithRetry().catch(e => {
-            console.error('Failed to re-run scheduling conflict checker:', e);
-          });
+          if (conflictCheckTimer) clearTimeout(conflictCheckTimer);
+          conflictCheckTimer = setTimeout(runConflictCheck, 500);
         });
 
         observer.observe(document.body, {
