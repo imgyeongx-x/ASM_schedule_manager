@@ -330,7 +330,7 @@
     modal.innerHTML = `
       <div class="modal-content alarm-settings-modal-content">
         <div class="modal-header">
-          <h4>🔔 알림 설정</h4>
+          <h4>알림 설정</h4>
           <button type="button" class="close-modal-btn">&times;</button>
         </div>
         <form id="alarm-settings-form">
@@ -451,6 +451,7 @@
 
   globalThis.ASMAlarmFeature = {
     loadSettings: loadAlarmSettings,
+    openSettings: openAlarmSettingsModal,
     toggleNotifications: toggleAlarmNotifications,
     syncAfterLocalChange: syncSchedulesAfterLocalChange,
     syncOnHistoryPageLoadIfConfigured: syncSchedulesOnHistoryPageLoadIfConfigured
