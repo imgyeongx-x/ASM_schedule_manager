@@ -6,7 +6,7 @@
 
 - 확장 프로그램이 신청한 멘토링 일정을 Worker로 동기화
 - Worker가 D1에 일정과 알림 채널 설정 저장
-- 공개 동기화 API는 요청당 128KB, 사용자별 30초 최소 간격, 일정 200건 제한을 적용
+- 공개 동기화 API는 요청당 128KB, 사용자별 5초 최소 간격, 일정 200건 제한을 적용
 - Cron Trigger가 5분마다 실행되어 알림이 켜진 사용자에게 **멘토링 시작 1시간 전 Discord 알림 발송 (개인일정은 알림 제외)**
 
 ## 준비
@@ -41,6 +41,7 @@ npx wrangler d1 migrations apply asm-schedule-db
 - Worker 변경 후에는 `npm run deploy`로 배포합니다.
 - D1 스키마 변경이 있으면 먼저 `npm run db:migrations:apply`를 실행한 뒤 배포합니다.
 - Cron Trigger는 5분마다 실행됩니다.
+- 알림 설정 저장/토글 동기화는 사용자별 최소 5초 간격으로 제한됩니다.
 - 공개 테스트 알림 API는 비활성화되어 있습니다.
 
 ## 사용자 설정값
