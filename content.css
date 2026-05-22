@@ -291,6 +291,30 @@
   box-sizing: border-box;
 }
 
+.asm-calendar-notice {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 4px;
+  background: #eff6ff;
+  border: 1px solid #086DB7;
+  border-radius: 6px;
+  padding: 10px 12px;
+  color: #1e4e87;
+  line-height: 1.5;
+}
+
+.asm-calendar-notice-title {
+  margin-bottom: 4px;
+  color: #086DB7;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.asm-calendar-notice-body {
+  color: #1e4e87;
+  font-size: 13px;
+}
+
 /* ── 검색창 UI ── */
 
 .asm-search-row {

@@ -1083,11 +1083,6 @@
     infoPopover.className = "asm-panel-info-popover";
     infoPopover.setAttribute("aria-hidden", "true");
     infoPopover.innerHTML = `
-      <div class="asm-info-notice">
-        <div class="asm-info-notice-title">내가 신청한 멘토링 내역이 안 보인다면?</div>
-        <div class="asm-info-notice-body">접수 내역 페이지에 한 번 들렀다 오면 자동으로 반영됩니다.</div>
-      </div>
-      <div class="asm-info-divider"></div>
       <div class="asm-info-title">자동 갱신 주기</div>
       <table class="asm-info-table">
         <tr><td>수강자수</td><td><b>5분</b></td></tr>
@@ -1297,6 +1292,21 @@
     calArea.className = "asm-cal-area";
     calArea.appendChild(searchRow);
     calArea.appendChild(calSection);
+
+    const calendarNotice = document.createElement("div");
+    calendarNotice.className = "asm-calendar-notice";
+
+    const calendarNoticeTitle = document.createElement("div");
+    calendarNoticeTitle.className = "asm-calendar-notice-title";
+    calendarNoticeTitle.textContent = "내가 신청한 멘토링 내역이 반영되지 않았다면?";
+
+    const calendarNoticeBody = document.createElement("div");
+    calendarNoticeBody.className = "asm-calendar-notice-body";
+    calendarNoticeBody.textContent = "접수 내역 페이지에 한 번 들렀다 오면 자동으로 반영됩니다.";
+
+    calendarNotice.appendChild(calendarNoticeTitle);
+    calendarNotice.appendChild(calendarNoticeBody);
+    calArea.appendChild(calendarNotice);
 
     body.appendChild(calArea);
     body.appendChild(eventPanel);
