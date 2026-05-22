@@ -341,7 +341,7 @@
             </label>
             <label class="alarm-settings-field">
               <span>표시 이름</span>
-              <input type="text" name="userLabel" placeholder="예: 재민" value="${currentSettings.userLabel}">
+              <input type="text" name="userLabel" placeholder="예: 김소마" value="${currentSettings.userLabel}">
             </label>
             <label class="alarm-settings-field alarm-settings-field--full">
               <span>Discord Webhook URL</span>

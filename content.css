@@ -31,7 +31,7 @@
 }
 
 .asm-panel-title {
-  font-size: 15px;
+  font-size: 20px;
   font-weight: 600;
   color: #1e293b;
 }
@@ -218,7 +218,7 @@
   color: #777;
   font-size: 11px;
   font-weight: 400;
-  letter-spacing: -0.8px;
+  /* letter-spacing: -0.8px; */
   opacity: 1;
 }
 
